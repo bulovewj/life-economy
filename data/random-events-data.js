@@ -14,7 +14,7 @@ globalThis.LG = globalThis.LG || {};
       text: '빚이 많이 쌓였어요. 상담센터에서 이자를 줄이는 방법을 알려 줘요.',
       choices: [ok('상담을 받는다', [{ t: 'debtRelief', rate: 0.04 }, stat('happiness', -5)], '빚이 커지기 전에 도움을 구해요.')] },
     cards: [
-      { id: 'R01', title: '지갑을 주웠다', icon: 'coin', weight: 3, cond: (s) => s.age <= 19,
+      { id: 'R01', title: '지갑을 주웠다', icon: 'coin', weight: 3, quick: true, cond: (s) => s.age <= 19, // quick: 결정 다음 해에도 나올 수 있음
         text: '길에서 지갑을 주웠어요. 어떻게 할까요?',
         choices: [
           { label: '주인을 찾아 준다', effects: [stat('relation', 3)], tip: '돌려주면 마음이 든든해져요.',

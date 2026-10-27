@@ -7,7 +7,7 @@ LG.screens.life = function (back, tabArg = 'log') {
 
   // 선택뿐 아니라 저절로 일어난 일·한 해 결산까지 모두(최근 순). ☆로 표시해 둘 수 있다.
   const kinds = { all: '전체', choice: '선택', life: '사건', money: '결산' };
-  const pick = (x) => tab.filter === 'all' || x.kind === tab.filter || (tab.filter === 'choice' && ['luck', 'mark'].includes(x.kind)) || (tab.filter === 'life' && x.kind === 'note');
+  const pick = (x) => tab.filter === 'all' || x.kind === tab.filter || (tab.filter === 'choice' && ['luck', 'mark'].includes(x.kind)) || (tab.filter === 'life' && ['note', 'daily', 'story', 'term', 'grow'].includes(x.kind));
   const log = () => el('div', {},
     el('div', { class: 'speed filters', role: 'group', 'aria-label': '기록 고르기' }, Object.entries(kinds).map(([k, label]) =>
       el('button', { class: 'box choice' + (tab.filter === k ? ' on' : ''), type: 'button', 'aria-pressed': String(tab.filter === k), onclick: () => LG.screens.life(back, { name: 'log', filter: k }) }, label))),
@@ -35,7 +35,7 @@ LG.screens.life = function (back, tabArg = 'log') {
     const at = s.age - D.startAge - 1;
     if (at < 0) return el('p', { class: 'box' }, '첫 해가 지나면 친구들과 나란히 볼 수 있어요.');
     g.friends = g.friends || LG.npc.all(s.seed, g.hist, s.fair);
-    const row = (name, h) => el('tr', {}, el('td', {}, name), el('td', {}, money(h.netWorth)), el('td', {}, String(Math.round(h.happiness))), el('td', {}, String(Math.round(h.relation))));
+    const row = (name, h) => el('tr', {}, el('td', {}, name), el('td', { class: 'num' }, money(h.netWorth)), el('td', { class: 'num' }, String(Math.round(h.happiness))), el('td', { class: 'num' }, String(Math.round(h.relation))));
     return el('div', {},
       el('p', {}, `같은 날 태어난 친구들의 ${s.age - 1}살 모습이에요. 정해진 규칙대로 움직이는 프로그램이에요.`),
       el('div', { class: 'scroll' }, el('table', {},

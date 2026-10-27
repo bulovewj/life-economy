@@ -32,7 +32,7 @@
   position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 30;
   width: min(92vw, 460px); min-height: 64px; display: flex; flex-direction: column; align-items: center; gap: 2px;
   padding: 10px 16px; font: inherit; color: #fff; background: #d1495b; border: 3px solid var(--ink); border-radius: 10px;
-  box-shadow: 0 4px 0 var(--ink); cursor: pointer; animation: drop 0.35s ease-out, pulse 1.6s ease-in-out 0.4s infinite;
+  box-shadow: 0 4px 0 var(--ink); cursor: pointer; animation: drop 0.35s ease-out, pulse 1.6s ease-in-out 0.4s 2; /* 두 번 강조하고 멈춤 */
 }
 .event-alert b { font-size: 20px; }
 .event-alert small { font-size: 16px; opacity: 0.9; }
@@ -42,7 +42,7 @@
 li.story b { color: #b13e53; }
 
 /* 이벤트 말풍선: 캐릭터 머리 위 */
-.scene .bubble { position: absolute; left: 50%; bottom: calc(3% + 132px); margin-left: 20px; padding: 4px; background: #fff; border: 2px solid var(--ink); border-radius: 10px; animation: pop 0.4s ease-out, bob 1.2s ease-in-out 0.4s infinite; }
+.scene .bubble { position: absolute; left: 50%; display: flex; padding: 4px; background: #fff; border: 2px solid var(--ink); border-radius: 10px; animation: pop 0.4s ease-out, bob 1.2s ease-in-out 0.4s 2; } /* 위치는 ui.scene이 배율에 맞춰 정한다. 두 번 흔들고 멈춤 */
 .scene .bubble::after { content: ''; position: absolute; left: 6px; bottom: -8px; border: 6px solid transparent; border-top-color: var(--ink); }
 @keyframes bob { 50% { transform: translateY(-4px); } }
 
@@ -55,3 +55,9 @@ li.story b { color: #b13e53; }
 .fold summary .v { text-align: right; font-variant-numeric: tabular-nums; }
 .fold summary .chg { display: block; font-size: 14px; font-weight: normal; }
 .fold .kv { padding: 0 0 8px 14px; }
+
+/* 올해의 변화: 지난해 가장 중요한 새 정보 한 줄 */
+.headline { background: #fbf3cf; border-color: #e0a030; font-size: 17px; }
+.headline b { color: #b13e53; }
+li.daily b, li.grow b { color: var(--up); }
+li.term b { color: #b13e53; }

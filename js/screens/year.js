@@ -29,7 +29,10 @@ LG.screens.year = function () {
     el('b', {}, `⚡ ${pending.kind} 발생!`), el('span', {}, pending.e.title), el('small', {}, '눌러서 선택하러 가기'));
 
   // 한 해 진행 막대: 결정에서 막 돌아왔으면 배속과 상관없이 restMs 동안 천천히(로그를 읽을 시간)
-  const A = D.autoplay, wait = g.rest ? Math.max(A.restMs, A.stepMs / g.speed) : A.stepMs / g.speed;
+  // 지난해 새 정보가 있었으면 그 줄(올해의 변화)을 고정하고 readMs 동안 머문다
+  const A = D.autoplay, lastYear = (s.log || []).filter((x) => x.age === s.age - 1);
+  const headline = A.headline.map((k) => lastYear.find((x) => x.kind === k)).find(Boolean);
+  const step = A.stepMs / g.speed, wait = g.rest ? Math.max(A.restMs, step) : headline && fresh ? Math.max(A.readMs, step) : step;
   if (!pending) g.rest = false; // 알림을 띄운 동안은 쉬는 시간 표시를 남겨 둔다
   const fill = el('div', { class: 'fill' });
   const bar = el('div', { class: 'yearbar' + (pending ? ' full' : ''), role: 'progressbar', 'aria-label': `${s.age}살 한 해 진행` }, fill,
@@ -44,6 +47,7 @@ LG.screens.year = function () {
       el('b', {}, `${s.age}살`), g.auto ? ` ▶ ${g.speed}×` : ' ❚❚', ` · ${D.calendarStartYear + s.age - D.startAge}년 · ${LG.ui.ageGroup(s.age)} · ${s.name}`),
     speedBar, bar,
     LG.ui.statBars(s),
+    headline ? el('p', { class: 'box headline' }, el('b', {}, `${s.age - 1}살의 변화 `), headline.text) : null,
     el('div', { class: 'box lifelog' },
       el('h3', {}, '인생 로그'),
       el('ul', {}, recent.length ? recent.map((x) => el('li', { class: x.kind }, el('b', {}, `${x.age}살 `), x.text)) : el('li', {}, '이제 인생이 시작돼요.')),
@@ -100,7 +104,7 @@ LG.screens.advance = function (focus) {
   const daily = () => {
     LG.events.stories(s, (text, b) => LG.lifelog.add(s, 'story', text + LG.lifelog.delta(b, LG.events.snap(s))));
     const b = LG.events.snap(s), d = LG.events.daily(s);
-    if (d) LG.lifelog.add(s, 'life', d.text + LG.lifelog.delta(b, LG.events.snap(s)));
+    if (d) LG.lifelog.add(s, 'daily', d.text + LG.lifelog.delta(b, LG.events.snap(s)));
     settle();
   };
   // 결정이 필요하면 화면을 바꾸지 않고 알림만. '다음 결정까지'는 여기서 멈춘다.

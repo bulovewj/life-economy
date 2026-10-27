@@ -56,15 +56,15 @@ globalThis.LG = globalThis.LG || {};
     { id: 'E32', age: [65, 65], title: '은퇴 생활', icon: 'coin', terms: ['연금'],
       text: '국민연금이 나오기 시작해요. 이제 시간을 어떻게 쓸까요?',
       choices: [
-        { label: '여행과 배움에 쓴다 (연 1,000만원)', effects: [expense(pl(1000), 16), stat('happiness', 8), stat('health', 2), count('경험소비')], tip: '쓰는 만큼 경험이 쌓여요.' },
+        { label: '여행과 배움에 쓴다 (연 1,000만원)', effects: [expense(pl(1000), 16), stat('happiness', 4), { t: 'recurring', what: 'stat', k: 'happiness', v: 1, years: 16 }, stat('health', 2), count('경험소비')], tip: '쓰는 만큼 경험이 쌓여요.' },
         { label: '최대한 아낀다', effects: [stat('happiness', -2)], tip: '아끼는 것도 방법이지만 쓰임도 중요해요.' },
-        { label: '가족과 손주에게 쓴다 (연 600만원)', effects: [expense(pl(600), 16), stat('relation', 8)], tip: '마음을 나누는 데 돈을 쓰기도 해요.' },
+        { label: '가족과 손주에게 쓴다 (연 600만원)', effects: [expense(pl(600), 16), stat('relation', 4), { t: 'recurring', what: 'stat', k: 'relation', v: 1, years: 16 }], tip: '마음을 나누는 데 돈을 쓰기도 해요.' },
       ] },
 
     { id: 'E33', age: [70, 70], title: '건강 투자', icon: 'hospital',
       text: '몸을 돌볼 때예요. 어떻게 할까요?',
       choices: [
-        { label: '정기 검진과 운동을 한다 (연 200만원)', effects: [expense(pl(200), 10), stat('health', 10)], tip: '미리 돌보면 큰 병원비를 줄일 수 있어요.' },
+        { label: '정기 검진과 운동을 한다 (연 200만원)', effects: [expense(pl(200), 10), stat('health', 5), { t: 'recurring', what: 'stat', k: 'health', v: 1, years: 10 }], tip: '미리 돌보면 큰 병원비를 줄일 수 있어요.' },
         { label: '다음에 하기로 미룬다', effects: [later('E33', 'hospital', 5)], tip: '미룬 건강 관리는 나중에 돌아와요.' },
       ],
       later: { hospital: { chance: [

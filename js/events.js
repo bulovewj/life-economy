@@ -166,7 +166,7 @@ globalThis.LG = globalThis.LG || {};
       if (r.next() >= (hadEvent ? L.rateBusy : L.rate)) return null;
       const pool = {};
       const rest = hadEvent || s.age - s.lastDecisionAge <= 1; // 결정이 있었던 해와 그다음 해는 선택형 카드 쉬기
-      L.cards.filter((c) => (!c.cond || c.cond(s)) && (!rest || c.choices.length === 1)).forEach((c) => { pool[c.id] = c; });
+      L.cards.filter((c) => (!c.cond || c.cond(s)) && (!rest || c.choices.length === 1 || (c.quick && !hadEvent))).forEach((c) => { pool[c.id] = c; });
       if (!Object.keys(pool).length) return null;
       return pool[LG.state.weighted(r, pool)];
     },

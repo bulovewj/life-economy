@@ -16,8 +16,10 @@ LG.ui = {
   },
 
   render(...nodes) {
-    document.getElementById('app').replaceChildren(...nodes);
-    window.scrollTo(0, 0);
+    const app = document.getElementById('app'), y = window.scrollY;
+    const stay = app.querySelector('.screen.year') && nodes[0] && nodes[0].classList && nodes[0].classList.contains('year'); // 한 해 → 한 해: 읽던 곳 그대로
+    app.replaceChildren(...nodes);
+    window.scrollTo(0, stay ? y : 0);
   },
 
   money: (n) => LG.economy.formatMoney(n),
@@ -67,15 +69,15 @@ LG.ui = {
 
   // 배경 위에 숨 쉬는 아바타 한 명. icon을 주면 머리 위 말풍선 + 그 이벤트에 맞는 장소로 잠깐 바뀐다.
   scene(look, icon) {
-    const S = LG.data.sprites, sc = 4, L = LG.data.economy.looks;
+    const S = LG.data.sprites, L = LG.data.economy.looks, sc = window.innerWidth < 600 ? 3 : 4; // 정수 배율만
     const bgName = (icon && L.eventBg[icon]) || look.bg;
     const sheet = ['backgrounds', 'places'].map((k) => S[k]).find((x) => x.frames[bgName]) || S.backgrounds, f = sheet.frames[bgName] || sheet.frames.room;
     const key = `${look.gender}_${look.idx}_${look.outfit}`, a = S.avatar.frames[`${key}_0`], b = S.avatar.frames[`${key}_1`];
     const pos = (v, total, size) => (v ? (v / (total - size)) * 100 : 0);
     return LG.ui.el('div', { class: 'scene', role: 'img', 'aria-label': icon ? '이벤트가 생긴 장면' : `${LG.ui.ageGroup(LG.data.economy.ageGroups[look.idx][0])} 시절의 나`,
       style: `background-image:url(${sheet.src});background-size:${(sheet.w / f.w) * 100}% ${(sheet.h / f.h) * 100}%;background-position:${pos(f.x, sheet.w, f.w)}% ${pos(f.y, sheet.h, f.h)}%` },
-      LG.ui.el('span', { class: 'sprite breathe', style: `width:${32 * sc}px;height:${32 * sc}px;background-image:url(${S.avatar.src});background-size:${S.avatar.w * sc}px ${S.avatar.h * sc}px;background-position:-${a.x * sc}px -${a.y * sc}px;--x0:-${a.x * sc}px;--x1:-${b.x * sc}px;--y:-${a.y * sc}px` }),
-      icon ? LG.ui.el('span', { class: 'bubble' }, LG.ui.sprite('icons24', icon, 2)) : null);
+      LG.ui.el('span', { class: 'sprite breathe avatar', style: `width:${32 * sc}px;height:${32 * sc}px;margin-left:-${16 * sc}px;background-image:url(${S.avatar.src});background-size:${S.avatar.w * sc}px ${S.avatar.h * sc}px;background-position:-${a.x * sc}px -${a.y * sc}px;--x0:-${a.x * sc}px;--x1:-${b.x * sc}px;--y:-${a.y * sc}px` }),
+      icon ? LG.ui.el('span', { class: 'bubble', style: `bottom:calc(3% + ${26 * sc}px);margin-left:${6 * sc}px` }, LG.ui.sprite('icons24', icon, sc === 3 ? 1.5 : 2)) : null); // 머리 옆 위
   },
 
   // 능력치 막대. 전에 보여 준 값에서 새 값으로 부드럽게 차오른다.

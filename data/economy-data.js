@@ -67,7 +67,9 @@ LG.data.economy = {
   shareMonth: 45,
   messages: { resume: '쉬던 시간이 끝나고 다시 일을 시작했어요.' },
   // 배속 진행: 결정 화면에서 돌아온 뒤 최소 restMs 동안 한 해 화면(로그)을 보여 준다. stepMs ÷ 배속 = 한 해 간격
-  autoplay: { stepMs: 1600, restMs: 4000 },
+  // readMs: 새 정보(새 직장·이사·침체·새 용어·인생 이야기 등)가 생긴 해는 배속과 상관없이 이만큼 머문다
+  // headline: 메인에 '올해의 변화'로 고정할 기록 종류(앞쪽이 먼저). 작은 일(daily)·결산(money)은 반복이라 빠르게 흐른다
+  autoplay: { stepMs: 1600, restMs: 4000, readMs: 3500, headline: ['term', 'life', 'story', 'note', 'luck'] },
   // 인생 로그 문구 (js/lifelog.js)
   logText: {
     recession: '경기가 크게 나빠졌어요. 주가가 떨어졌어요.',

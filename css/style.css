@@ -119,6 +119,8 @@ canvas { max-width: 100%; background: #fff; border: 2px solid var(--line); borde
 .scroll { overflow-x: auto; }
 table { border-collapse: collapse; width: 100%; font-size: 16px; }
 th, td { border: 1px solid var(--line); padding: 6px 8px; text-align: left; vertical-align: top; }
+td.num, th.num { white-space: nowrap; text-align: right; } /* 금액·능력치가 '6/8'처럼 갈라지지 않게 */
+.scroll table.wide { min-width: 560px; }
 .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; }
 .chip { padding: 4px 10px; flex: 0 0 auto; }
 .picked { min-height: 1.6em; }
@@ -132,7 +134,7 @@ th, td { border: 1px solid var(--line); padding: 6px 8px; text-align: left; vert
 .with-icon { display: flex; align-items: center; gap: 10px; }
 .choice.pick { display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; }
 .scene { position: relative; width: 100%; max-width: 480px; aspect-ratio: 16 / 9; margin: 0 auto; image-rendering: pixelated; background-repeat: no-repeat; border: 2px solid var(--ink); border-radius: 8px; overflow: hidden; }
-.scene .sprite { position: absolute; left: 50%; bottom: 3%; margin-left: -64px; }
+.scene > .avatar { position: absolute; left: 50%; bottom: 3%; } /* 캐릭터만. 말풍선 속 아이콘에는 적용하지 않는다 */
 .breathe { animation: breathe 1.4s steps(1) infinite; }
 @keyframes breathe { 0% { background-position: var(--x0) var(--y); } 50% { background-position: var(--x1) var(--y); } }
 .deltas li { animation: pop 0.4s ease-out; }

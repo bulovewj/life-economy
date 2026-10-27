@@ -55,7 +55,7 @@ globalThis.LG = globalThis.LG || {};
       if (passed.length) add('life', L.milestone(LG.economy.formatMoney(passed[passed.length - 1])));
       s.flags.bestNw = Math.max(best, nw);
       add('money', L.year(LG.economy.formatMoney(sum.income), LG.economy.formatMoney(sum.spend + sum.interest + sum.principal), LG.economy.formatMoney(sum.net)));
-      if (groupOf(age + 1) !== groupOf(age) && age < LG.data.economy.endAge) LG.lifelog.add(s, 'life', L.grow(groupOf(age + 1)), age + 1);
+      if (groupOf(age + 1) !== groupOf(age) && age < LG.data.economy.endAge) LG.lifelog.add(s, 'grow', L.grow(groupOf(age + 1)), age + 1); // 나이대 전환(앨범·올해의 변화에서는 뺀다)
     },
   };
 })();

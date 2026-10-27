@@ -49,7 +49,7 @@ globalThis.LG = globalThis.LG || {};
     stake,
     move: (s, e) => LG.housing.moveTo(s, e.to),
     buyHouse(s, e, v, ctx, out) {
-      if (!LG.housing.buy(s, e.factor, e.loanRatio).ok && e.failText) out.notes.push(e.failText);
+      if (!LG.housing.buy(s, e.factor, e.loanRatio, e.size || 1).ok && e.failText) out.notes.push(e.failText);
     },
     upsize: (s) => LG.housing.upsize(s),
     prepay: (s) => LG.housing.prepay(s),

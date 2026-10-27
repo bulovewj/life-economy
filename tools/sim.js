@@ -61,8 +61,17 @@ function npcReport(n) {
   rows.forEach((r) => console.log(`  ${r.name}: 평균 ${f(r.mean)} 중앙값 ${f(r.med)} 표준편차 ${f(r.sd)} (평균 대비 ${r.cv.toFixed(2)}) 마이너스 ${r.neg}건`));
   const m = Object.fromEntries(rows.map((r) => [r.name, r]));
   const sdMax = rows.every((r) => r.name === '한방이' || m['한방이'].sd >= r.sd); // 시나리오: "한방이는 분산 최대"
-  const ok = [m['꾸준이'].mean >= m['차곡이'].mean, m['차곡이'].mean > m['오늘이'].mean, sdMax];
-  console.log(`  기준: 꾸준이≥차곡이 ${ok[0]}, 차곡이>오늘이 ${ok[1]}, 한방이 표준편차(분산) 최대 ${ok[2]}`);
+  // 같은 삶 비교: 차곡이의 선택 규칙·운을 그대로 두고 돈 관리(저축률·배분)만 차곡이식 / 꾸준이식으로 바꿔 본다
+  const [cha, kku] = LG.data.npcs, same = { a: 0, b: 0 };
+  for (let seed = BASE + 1; seed <= BASE + n; seed++) {
+    const hist = E.generateHistory(LG.rng.create(seed + 1));
+    const a = LG.npc.simulate(cha, seed, hist, FAIR, 0), b = LG.npc.simulate({ ...cha, saveRate: kku.saveRate, alloc: kku.alloc }, seed, hist, FAIR, 0);
+    same.a += E.netWorth(a) / a.priceLevel / n; same.b += E.netWorth(b) / b.priceLevel / n;
+  }
+  console.log(`  같은 삶, 돈 관리만 다르게: 차곡이식(저축 30%·예금 위주) ${f(same.a)} / 꾸준이식(저축 20%·지수펀드 80%) ${f(same.b)}`);
+  const ok = [same.b >= same.a, m['차곡이'].mean > m['오늘이'].mean, sdMax];
+  console.log(`  기준: 같은 삶에서 꾸준이식≥차곡이식 ${ok[0]}, 차곡이>오늘이 ${ok[1]}, 한방이 표준편차(분산) 최대 ${ok[2]}`);
+  console.log(`  (참고) 서로 다른 삶끼리 평균: 꾸준이≥차곡이 ${m['꾸준이'].mean >= m['차곡이'].mean} — 직업·가족·선택이 달라서 판정에는 쓰지 않음`);
   return ok.every(Boolean);
 }
 

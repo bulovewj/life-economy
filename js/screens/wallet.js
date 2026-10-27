@@ -64,15 +64,16 @@ LG.screens.wallet = function (back) {
   }, 0);
   const table = el('div', { class: 'scroll' }, el('table', {},
     el('thead', {}, el('tr', {}, el('th', {}, '나이'), Object.values(assets).map((a) => el('th', {}, a)))),
-    el('tbody', {}, past.map((y) => el('tr', {}, el('td', {}, `${y.age}살${y.isRecession ? ' (침체)' : ''}`), Object.keys(assets).map((k) => el('td', {}, pct(y[k]))))))));
+    el('tbody', {}, past.map((y) => el('tr', {}, el('td', {}, `${y.age}살${y.isRecession ? ' (침체)' : ''}`), Object.keys(assets).map((k) => el('td', { class: 'num' }, pct(y[k]))))))));
 
   render(el('section', { class: 'screen' },
     el('h2', { class: 'with-icon' }, LG.ui.sprite('icons16', 'wallet', 3), '내 지갑'),
     el('p', { class: 'wealth' }, '순자산 ', el('b', {}, money(LG.economy.netWorth(s)))),
-    el('ul', { class: 'list' }, rows.map(([k, v]) => el('li', {}, `${names[k]} ${money(v)}`))),
+    el('ul', { class: 'list' }, rows.map(([k, v]) => el('li', {}, `${names[k]} ${money(v)}`, k === 'emergency' ? ` (생활비 약 ${(v / LG.panels.monthly(s)).toFixed(1)}개월치)` : ''))),
     loans.length ? el('div', {}, el('h3', {}, '빚'), el('ul', { class: 'list' }, loans)) : null,
     canSet ? el('div', { class: 'col' },
-      el('h3', {}, '월급에서 모으는 비율'), el('div', { class: 'speed', role: 'group', 'aria-label': '월급에서 모으는 비율' }, rateBtns),
+      el('h3', {}, '남은 돈 중 저축·투자할 비율'), el('p', { class: 'small' }, '생활비·집세·이자를 내고 남은 돈 가운데 몇 %를 저축·투자에 넣을지 정해요. 나머지는 현금으로 남아요.'),
+      el('div', { class: 'speed', role: 'group', 'aria-label': '남은 돈 중 저축·투자할 비율' }, rateBtns),
       el('h3', {}, '모은 돈 나누기'), sliders) : el('p', { class: 'box' }, '20살이 되고 내 소득이 생기면 저축과 투자를 정할 수 있어요.'),
     past.length ? el('div', { class: 'col' }, el('h3', {}, '지난 5년 수익률'), canvas,
       el('p', { class: 'small' }, '파랑 지수펀드 · 노랑 인기주 · 빨강 코인. 지난 결과는 앞으로를 알려 주지 않아요.'), table) : null,

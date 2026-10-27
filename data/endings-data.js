@@ -9,7 +9,11 @@ globalThis.LG = globalThis.LG || {};
   LG.data.endingTexts = {
     noTitle: '나만의 길을 걸은 사람',
     closing: '돈이 많은 인생, 행복한 인생, 바쁜 인생… 무엇이 좋은 인생일까요? 친구와 이야기해 봐요.',
-    friends: '이 친구들은 정해진 규칙대로 움직이는 프로그램이에요.',
+    friends: '이 친구들은 정해진 규칙대로 움직이는 프로그램이에요. 직업·가족·돈 관리 방식이 모두 달랐어요. 한 번의 삶이라 운도 섞여 있어요.',
+    album: '내 인생 앨범',
+    albumHint: '인생 기록에서 ☆를 누른 장면이 여기에 모여요. 없으면 큰 변화를 골라 보여 줘요.',
+    happyYears: (n) => `즐겁게 보낸 해(행복 70 이상): ${n}년`,
+    todayValue: (m) => `2026년 돈으로 바꾸면 약 ${m}이에요(물가가 오른 만큼 나눈 값).`,
     friendsIntro: '같은 날, 같은 세상에서 태어난 친구 4명이에요. 세상(경제 역사)은 똑같아요.',
   };
 
@@ -51,7 +55,7 @@ globalThis.LG = globalThis.LG || {};
     { name: '한방이', desc: '코인·인기주 위주, 침체엔 다 판다', focus: 'work', saveRate: 0.2, alloc: { deposit: 0, index: 0, stock: 50, coin: 50 }, ...same,
       fixed: { E21: 0, E30: 0, E14: 0 },
       weights: { cashOut: -0.005, debt: 0.002, happy: 0.05, other: 0, save: 0, invest: 0.1, risk: 2, exp: 0, jobPay: 0.5, safeJob: 0, riskJob: 0 } },
-    { name: '오늘이', desc: '경험과 소비 중심, 저축은 조금', focus: 'rest', saveRate: 0.05, alloc: { deposit: 100, index: 0, stock: 0, coin: 0 }, ...same,
+    { name: '오늘이', desc: '경험과 소비 중심, 저축은 조금', focus: 'rest', saveRate: 0.1, alloc: { deposit: 50, index: 0, stock: 0, coin: 0, emergency: 50 }, ...same, // 저축 10% 중 절반은 비상금
       fixed: { E14: 2 },
       weights: { cashOut: -0.002, debt: 0.003, happy: 0.8, other: 0.1, save: -0.02, invest: 0, risk: -0.5, exp: 3, jobPay: 0.1, safeJob: 0, riskJob: 0 } },
   ];

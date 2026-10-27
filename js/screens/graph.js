@@ -14,6 +14,8 @@ LG.graph = (() => {
   }
 
   const xOf = (age, w, L, R) => L + ((age - 12) / 68) * (w - L - R);
+  // 왼쪽 여백 = 가장 넓은 눈금 글자 + 8px (음수 부호까지 잘리지 않게)
+  const leftPad = (g, lo, hi) => 8 + Math.max(...[0, 1, 2, 3, 4].map((i) => g.measureText(short(hi - ((hi - lo) * i) / 4)).width));
 
   function axes(g, w, h, L, R, T, B, lo, hi, label) {
     g.strokeStyle = GRID; g.fillStyle = INK; g.lineWidth = 1;
@@ -31,8 +33,8 @@ LG.graph = (() => {
 
     // 순자산(왼쪽 축) + 행복(오른쪽 축) + 침체 회색 띠 + 내 선택 점. 점을 누르면 onPick(문장)
     life(canvas, s, hist, onPick) {
-      const { g, w, h } = setup(canvas, 220), L = 52, R = 30, T = 10, B = 24;
-      const nw = s.history.map((x) => x.netWorth), hi = Math.max(1, ...nw), lo = Math.min(0, ...nw);
+      const { g, w, h } = setup(canvas, 220), R = 30, T = 10, B = 24;
+      const nw = s.history.map((x) => x.netWorth), hi = Math.max(1, ...nw), lo = Math.min(0, ...nw), L = leftPad(g, lo, hi);
       const yM = (v) => T + ((hi - v) / (hi - lo)) * (h - T - B), yH = (v) => T + ((100 - v) / 100) * (h - T - B);
       g.fillStyle = '#e4dfd5';
       hist.filter((y) => y.isRecession).forEach((y) => g.fillRect(xOf(y.age, w, L, R) - 3, T, 6, h - T - B));
@@ -60,9 +62,9 @@ LG.graph = (() => {
 
     // 나와 친구들의 순자산 선 (얇게)
     friends(canvas, me, list, colors) {
-      const { g, w, h } = setup(canvas, 200), L = 52, R = 10, T = 10, B = 24;
+      const { g, w, h } = setup(canvas, 200), R = 10, T = 10, B = 24;
       const all = [me, ...list.map((x) => x.s)], nw = all.flatMap((s) => s.history.map((x) => x.netWorth));
-      const hi = Math.max(1, ...nw), lo = Math.min(0, ...nw), y = (v) => T + ((hi - v) / (hi - lo)) * (h - T - B);
+      const hi = Math.max(1, ...nw), lo = Math.min(0, ...nw), L = leftPad(g, lo, hi), y = (v) => T + ((hi - v) / (hi - lo)) * (h - T - B);
       axes(g, w, h, L, R, T, B, lo, hi, short);
       all.forEach((s, i) => {
         g.strokeStyle = colors[i]; g.lineWidth = i === 0 ? 3 : 1.5; g.beginPath();

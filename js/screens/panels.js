@@ -28,6 +28,14 @@ LG.panels = (() => {
   };
 
   return {
+    // 한 달 생활비(지난해 결산 기준: 생활비+집세+고정지출). 결산 전이면 지금 물가의 1인 생활비
+    monthly(s) {
+      const b = s.board;
+      return Math.max(1, b ? (b.living + b.rent + b.fixed) / 12 : (LG.data.economy.living.single * s.priceLevel) / 12);
+    },
+    // 그때 돈을 2026년 물가로
+    today: (s, n) => Math.round(n / s.priceLevel),
+
     // 자산 한 장 사진(올해 시작 때 찍어 두고 비교한다)
     snap(s) {
       return { ...s.assets, cash: s.cash, debt: debtOf(s), netWorth: LG.economy.netWorth(s) };
@@ -44,11 +52,13 @@ LG.panels = (() => {
         el('h3', {}, '내 자산'),
         el('p', { class: 'small' }, '눌러서 자세히 · ▲▼ 올해 바뀐 만큼'),
         group('a-save', '모은 돈', [['cash', '현금'], ['emergency', '비상금'], ['deposit', '예금']]),
+        now.emergency > 0 ? el('p', { class: 'small' }, `비상금 = 생활비 약 ${(now.emergency / LG.panels.monthly(s)).toFixed(1)}개월치`) : null,
         group('a-invest', '투자', [['index', '지수펀드'], ['stock', '인기주'], ['coin', '코인']]),
         group('a-home', '집·차', [['lease', '보증금'], ['house', '집'], ['car', '차']]),
         fold('a-debt', '빚', now.debt, now.debt - ref.debt, false,
           s.loans.length ? s.loans.map((l) => row(loanNames[l.kind] || l.kind, l.bal, null, false, ` 연 ${(l.rate * 100).toFixed(1)}%`)) : [row('빚 없음', 0)]),
-        el('ul', { class: 'kv total' }, row('순자산', now.netWorth, now.netWorth - ref.netWorth, true)));
+        el('ul', { class: 'kv total' }, row('순자산', now.netWorth, now.netWorth - ref.netWorth, true,
+          s.priceLevel > 1.05 ? ` 2026년 돈으로 약 ${money(LG.panels.today(s, now.netWorth))}` : '')));
     },
 
     board(s) {

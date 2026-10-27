@@ -31,9 +31,9 @@ globalThis.LG = globalThis.LG || {};
       return 0;
     },
 
-    // 집을 사는 데 필요한 내 돈 (이미 가진 보증금은 뺀다)
-    buyNeed(s, factor, loanRatio) {
-      const price = Math.round(Math.round(P(s).house * s.housingIdx) * factor);
+    // 집을 사는 데 필요한 내 돈 (이미 가진 보증금은 뺀다). size: 0.5 = 작은 집(빌라·소형)
+    buyNeed(s, factor, loanRatio, size = 1) {
+      const price = Math.round(Math.round(P(s).house * s.housingIdx * size) * factor);
       return Math.max(0, price - Math.round(price * loanRatio) - backNet(s));
     },
 
@@ -56,9 +56,9 @@ globalThis.LG = globalThis.LG || {};
       else s.housing = { type: 'parent', rent: 0 };
     },
 
-    // 집값의 factor배 가격으로 산다(청약은 0.8). loanRatio만큼 주택담보대출. 돈이 모자라면 {ok:false}
-    buy(s, factor, loanRatio) {
-      const value = Math.round(P(s).house * s.housingIdx);
+    // 집값의 factor배 가격으로 산다(청약은 0.8). loanRatio만큼 주택담보대출. size 0.5 = 작은 집. 돈이 모자라면 {ok:false}
+    buy(s, factor, loanRatio, size = 1) {
+      const value = Math.round(P(s).house * s.housingIdx * size);
       const price = Math.round(value * factor), loan = Math.round(price * loanRatio);
       if (liquid(s) + backNet(s) < price - loan) return { ok: false }; // 모자라면 아무것도 바꾸지 않는다
       release(s);

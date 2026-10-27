@@ -4,6 +4,10 @@ LG.screens.end = function () {
   const colors = ['#333c57', '#38a169', '#3b5dc9', '#d1495b', '#e0a030'];
   const friends = LG.npc.all(s.seed, g.hist, s.fair);
   const titles = LG.data.pickTitles(s);
+  // 인생 앨범: 별표한 기록, 없으면 이야기·큰 사건에서 나이대가 겹치지 않게 3개
+  const starred = (s.log || []).filter((x) => x.star);
+  const album = starred.length ? starred.slice(0, 6) : (s.log || []).filter((x) => ['story', 'life'].includes(x.kind))
+    .filter((x, i, arr) => arr.findIndex((y) => Math.floor(y.age / 15) === Math.floor(x.age / 15)) === i).slice(0, 3);
   const picked = el('p', { class: 'small picked' }, '그래프의 점을 누르면 그때 내가 한 선택이 보여요.');
   const lifeCanvas = el('canvas', { role: 'img', 'aria-label': `인생 그래프: 순자산 ${money(s.history[0].netWorth)}에서 ${money(s.history.at(-1).netWorth)}로, 행복 ${Math.round(s.history[0].happiness)}에서 ${Math.round(s.history.at(-1).happiness)}로. 아래 선택 목록에 자세히 있어요.` });
   const friendCanvas = el('canvas', { role: 'img', 'aria-label': '친구 비교 그래프' });
@@ -20,8 +24,8 @@ LG.screens.end = function () {
 
   const row = (name, desc, w, color) => el('tr', {},
     el('td', {}, el('span', { class: 'dot', style: `background:${color}` }), name, el('br'), el('small', {}, desc)),
-    el('td', {}, money(LG.economy.netWorth(w))), el('td', {}, String(Math.round(w.stats.happiness))),
-    el('td', {}, String(Math.round(w.stats.relation))), el('td', {}, LG.data.pickTitles(w).map((t) => t.name).join(', ')));
+    el('td', { class: 'num' }, money(LG.economy.netWorth(w))), el('td', { class: 'num' }, String(Math.round(w.stats.happiness))),
+    el('td', { class: 'num' }, String(Math.round(w.stats.relation))), el('td', {}, LG.data.pickTitles(w).map((t) => t.name).join(', ')));
 
   const mine = LG.data.markers;
   const again = () => {
@@ -36,6 +40,11 @@ LG.screens.end = function () {
     el('h2', {}, `${s.name}의 인생 마무리`),
     el('p', { class: 'small' }, `세계 번호 ${s.seed} · ${s.age - 1}살까지 살았어요.`),
     el('div', { class: 'box' }, '순자산 ', el('b', {}, money(LG.economy.netWorth(s)))),
+    el('p', { class: 'small' }, X.todayValue(money(LG.panels.today(s, LG.economy.netWorth(s))))),
+    el('p', { class: 'small' }, X.happyYears(s.history.filter((h) => h.happiness >= 70).length)),
+    el('h3', {}, X.album),
+    el('p', { class: 'small no-print' }, X.albumHint),
+    el('ul', { class: 'list album' }, album.map((x) => el('li', {}, el('b', {}, `${x.age}살 `), x.text))),
     el('h3', {}, '인생 그래프'),
     el('div', { class: 'chart' }, lifeCanvas),
     el('p', { class: 'small' }, '파랑: 순자산 · 노랑: 행복 · 회색 띠: 경기가 나빴던 해'),
@@ -48,7 +57,7 @@ LG.screens.end = function () {
       el('p', {}, X.friendsIntro),
       el('div', { class: 'chart' }, friendCanvas),
       el('p', { class: 'small' }, `굵은 선이 나예요. ${friends.map((f, i) => `${f.npc.name}(${['초록', '파랑', '빨강', '노랑'][i]})`).join(' · ')}`),
-      el('div', { class: 'scroll' }, el('table', {},
+      el('div', { class: 'scroll' }, el('table', { class: 'wide' },
         el('thead', {}, el('tr', {}, ['이름', '순자산', '행복', '관계', '칭호'].map((h) => el('th', {}, h)))),
         el('tbody', {}, row(s.name, '나', s, colors[0]), friends.map((f, i) => row(f.npc.name, f.npc.desc, f.s, colors[i + 1]))))),
       el('p', { class: 'small' }, X.friends)),

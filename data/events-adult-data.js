@@ -24,6 +24,8 @@ globalThis.LG = globalThis.LG || {};
           effects: [flag('청약'), { t: 'risk', ev: 'E19', key: 'win', years: 4 }], tip: '당첨은 운이 따라야 해요.' },
         { label: '대출을 받아 바로 산다 (집값의 70% 대출)', need: (s) => LG.housing.buyNeed(s, 1, 0.7),
           effects: [{ t: 'buyHouse', factor: 1, loanRatio: 0.7 }], tip: '빌린 돈으로 사면 오를 때도 내릴 때도 크게 움직여요.' },
+        { label: '작은 집(빌라)을 대출로 산다 (70% 대출)', need: (s) => LG.housing.buyNeed(s, 1, 0.7, 0.5),
+          effects: [{ t: 'buyHouse', factor: 1, loanRatio: 0.7, size: 0.5 }], tip: '작게 시작하면 필요한 돈도 줄어요.' },
         { label: '집값이 싼 중소도시로 이사한다', cond: (s) => s.cards.place === 'big', disabledReason: '대도시에 살 때만 열려요.',
           effects: [{ t: 'changeCity', place: 'mid' }, { t: 'raise', f: 0.9 }, stat('happiness', 2)], tip: '사는 곳에 따라 집값과 월급이 달라져요.' },
         { label: '계속 임차하고 그 돈을 투자한다', effects: [flag('임차전략')], tip: '집을 안 사는 것도 하나의 전략이에요.' },
@@ -31,6 +33,16 @@ globalThis.LG = globalThis.LG || {};
       later: { win: { p: (s) => (s.assets.house > 0 ? 0 : 0.12 + (s.spouse ? 0.05 : 0) + (s.children.length ? 0.05 : 0)),
         text: '청약에 당첨됐어요!',
         effects: [{ t: 'buyHouse', factor: 0.8, loanRatio: 0.7, failText: '당첨됐지만 계약금이 모자라 포기했어요.' }] } } },
+
+    { id: 'E35', age: [40, 44], cond: (s) => s.assets.house === 0 && !s.retired, title: '내 집, 다시 생각해 보기', icon: 'house', terms: ['대출·금리'],
+      text: '그동안 모은 돈으로 집을 다시 생각해 볼 수 있어요. 어떻게 할까요?',
+      choices: [
+        { label: '작은 집(빌라)을 대출로 산다 (70% 대출)', need: (s) => LG.housing.buyNeed(s, 1, 0.7, 0.5),
+          effects: [{ t: 'buyHouse', factor: 1, loanRatio: 0.7, size: 0.5 }], tip: '작게 시작하면 필요한 돈도 줄어요.' },
+        { label: '넓은 집을 대출로 산다 (70% 대출)', need: (s) => LG.housing.buyNeed(s, 1, 0.7),
+          effects: [{ t: 'buyHouse', factor: 1, loanRatio: 0.7 }], tip: '집이 클수록 빚도 커져요.' },
+        { label: '지금처럼 빌려서 산다', effects: [flag('임차전략')], tip: '집을 사지 않는 것도 하나의 선택이에요.' },
+      ] },
 
     { id: 'E20', age: [30, 38], cond: (s) => !!s.spouse, title: '가족 계획', icon: 'baby',
       text: '가족이 늘어날 수도 있어요. 어떻게 할까요?',
