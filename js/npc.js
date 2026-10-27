@@ -21,6 +21,7 @@ globalThis.LG = globalThis.LG || {};
       } else if (e.t === 'stat') { if (e.k === 'happiness') f.happy += v; else f.other += v * 0.5; }
       else if (e.t === 'asset') { if (['deposit', 'emergency'].includes(e.k)) f.save += v; else f.invest += v * (e.k === 'car' ? 0 : 1); }
       else if (e.t === 'debt') f.debt += v;
+      else if (e.t === 'transfer') f.save += v;
       else if (e.t === 'stake') { f.risk += 3 * w; f.invest += (e.frac || 0.3) * 10 * w; }
       else if (e.t === 'risk' || e.t === 'liquidate') f.risk += w;
       else if (e.t === 'buyIndex') f.invest += 3 * w;
@@ -71,11 +72,14 @@ globalThis.LG = globalThis.LG || {};
       while (s.age <= LG.data.economy.endAge) {
         LG.events.startYear(s);
         LG.events.applyFocus(s, h.focus(s));
-        LG.events.yearlyStats(s);
         const ev = LG.events.due(s, hist);
-        if (ev) { if (h.seen) h.seen(ev.id); resolve(ev, ev.id); }
+        if (ev) { if (h.seen) h.seen(ev.id); s.lastDecisionAge = s.age; resolve(ev, ev.id); }
         const card = LG.events.luck(s, !!ev);
-        if (card) { if (h.seen) h.seen(card.id); resolve(card, card.id); }
+        if (card) { if (h.seen) h.seen(card.id); if (card.choices.length > 1) s.lastDecisionAge = s.age; resolve(card, card.id); }
+        LG.events.stories(s).forEach((x) => h.seen && h.seen(x.id)); // 인생 이야기·작은 일(브라우저와 같은 순서)
+        const d = LG.events.daily(s);
+        if (d && h.seen) h.seen(d.id);
+        LG.events.yearlyStats(s); // 올해 고른 몇 년 효과도 올해부터 적용
         const sum = LG.economy.settleYear(s, hist[s.age - LG.data.economy.startAge]);
         if (h.year) h.year(s, sum);
       }

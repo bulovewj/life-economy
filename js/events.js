@@ -46,10 +46,14 @@ globalThis.LG = globalThis.LG || {};
     // 올해 나올 갈림길 1개(없으면 null). 나오는 순간 '했음'으로 표시. 겹친 건 다음 해로 미룬다.
     due(s, h) {
       const all = LG.data.events;
-      for (const ev of all.filter((e) => !s.done[e.id] && (e.when || s.schedule[e.id] === s.age))) {
+      // priority(경기 침체처럼 그해에만 열리는 사건)를 먼저 본다. 같은 해 다른 갈림길은 다음 해로 밀린다.
+      const cands = all.filter((e) => !s.done[e.id] && (e.when || s.schedule[e.id] === s.age))
+        .sort((a, b) => (b.priority ? 1 : 0) - (a.priority ? 1 : 0));
+      for (const ev of cands) {
         let shown = ev;
         if (ev.when) { if (!ev.when(s, h)) continue; }
         else if (ev.cond && !ev.cond(s)) {
+          if (s.age < ev.age[1]) { s.schedule[ev.id] = s.age + 1; continue; } // 아직 기한 안: 내년에 다시 확인
           s.done[ev.id] = true;
           if (!ev.fallback) continue;
           shown = { id: ev.id, title: ev.title, icon: ev.icon, text: ev.fallback.text,
@@ -100,7 +104,7 @@ globalThis.LG = globalThis.LG || {};
         if (LG.state.rngOf(s).next() < val(blk.p, s)) run(s, blk, null, out());
       }
       LG.effects.rollSalary(s);
-      s.joblessYears = !s.job && !s.dependent && !s.paused ? s.joblessYears + 1 : 0;
+      s.joblessYears = !s.job && !s.dependent && !s.paused && !s.retired ? s.joblessYears + 1 : 0;
       s.yearNotes = notes;
       return notes;
     },
@@ -121,7 +125,36 @@ globalThis.LG = globalThis.LG || {};
       for (const k of Object.keys(rest)) s.stats[k] = Math.min(100, Math.max(0, s.stats[k] + (rest[k] - s.stats[k]) * D.rate));
     },
 
+    // 인생 이야기(data/story-events-data.js): 조건이 맞는 것 중 한 해 perYear개까지, 각각 평생 한 번.
+    // each(text, before)를 이야기 하나 적용할 때마다 부른다(효과 요약이 섞이지 않게). [{id, text}] 돌려줌
+    stories(s, each) {
+      const S = LG.data.stories, r = LG.state.rngOf(s), got = [];
+      for (const st of S.list) {
+        if (got.length >= S.perYear || s.flags[`이야기${st.id}`] || !st.when(s)) continue;
+        if (st.p !== undefined && r.next() >= st.p) continue;
+        s.flags[`이야기${st.id}`] = true;
+        const text = val(st.text, s), before = LG.events.snap(s); // 효과 전에 문장을 만든다(비용 표시가 그대로 남게)
+        run(s, { effects: st.effects }, null, { notes: [] });
+        if (each) each(text, before);
+        got.push({ id: st.id, text });
+      }
+      return got;
+    },
+
+    // 저절로 일어나는 작은 일(data/daily-events-data.js): rate 확률로 하나 적용하고 돌려준다. 없으면 null
+    daily(s) {
+      const L = LG.data.daily, r = LG.state.rngOf(s);
+      if (r.next() >= L.rate) return null;
+      const pool = {};
+      L.list.filter((d) => !d.cond || d.cond(s)).forEach((d) => { pool[d.id] = d; });
+      if (!Object.keys(pool).length) return null;
+      const d = pool[LG.state.weighted(r, pool)];
+      run(s, { effects: d.effects }, null, { notes: [] });
+      return d;
+    },
+
     // 운 카드: 빚이 너무 많으면 상담 카드, 아니면 확률(갈림길 있는 해는 낮게)로 한 장. 없으면 null
+    // 갈림길이 있었던 해에는 선택지가 하나뿐인(저절로 적용되는) 카드만 — 한 해에 결정 화면은 하나
     luck(s, hadEvent) {
       const L = LG.data.luck, E = LG.economy;
       const debt = s.loans.filter((l) => l.kind !== 'student').reduce((t, l) => t + l.bal, 0); // 학자금은 취업 후 갚는 빚이라 제외
@@ -132,7 +165,8 @@ globalThis.LG = globalThis.LG || {};
       const r = LG.state.rngOf(s);
       if (r.next() >= (hadEvent ? L.rateBusy : L.rate)) return null;
       const pool = {};
-      L.cards.filter((c) => !c.cond || c.cond(s)).forEach((c) => { pool[c.id] = c; });
+      const rest = hadEvent || s.age - s.lastDecisionAge <= 1; // 결정이 있었던 해와 그다음 해는 선택형 카드 쉬기
+      L.cards.filter((c) => (!c.cond || c.cond(s)) && (!rest || c.choices.length === 1)).forEach((c) => { pool[c.id] = c; });
       if (!Object.keys(pool).length) return null;
       return pool[LG.state.weighted(r, pool)];
     },

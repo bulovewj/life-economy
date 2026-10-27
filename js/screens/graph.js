@@ -9,7 +9,7 @@ LG.graph = (() => {
     canvas.style.width = `${w}px`; canvas.style.height = `${h}px`;
     const g = canvas.getContext('2d');
     g.setTransform(dpr, 0, 0, dpr, 0, 0);
-    g.font = '11px Galmuri9, sans-serif';
+    g.font = '14px Galmuri9, sans-serif';
     return { g, w, h };
   }
 
@@ -31,7 +31,7 @@ LG.graph = (() => {
 
     // 순자산(왼쪽 축) + 행복(오른쪽 축) + 침체 회색 띠 + 내 선택 점. 점을 누르면 onPick(문장)
     life(canvas, s, hist, onPick) {
-      const { g, w, h } = setup(canvas, 220), L = 46, R = 30, T = 10, B = 24;
+      const { g, w, h } = setup(canvas, 220), L = 52, R = 30, T = 10, B = 24;
       const nw = s.history.map((x) => x.netWorth), hi = Math.max(1, ...nw), lo = Math.min(0, ...nw);
       const yM = (v) => T + ((hi - v) / (hi - lo)) * (h - T - B), yH = (v) => T + ((100 - v) / 100) * (h - T - B);
       g.fillStyle = '#e4dfd5';
@@ -60,7 +60,7 @@ LG.graph = (() => {
 
     // 나와 친구들의 순자산 선 (얇게)
     friends(canvas, me, list, colors) {
-      const { g, w, h } = setup(canvas, 200), L = 46, R = 10, T = 10, B = 24;
+      const { g, w, h } = setup(canvas, 200), L = 52, R = 10, T = 10, B = 24;
       const all = [me, ...list.map((x) => x.s)], nw = all.flatMap((s) => s.history.map((x) => x.netWorth));
       const hi = Math.max(1, ...nw), lo = Math.min(0, ...nw), y = (v) => T + ((hi - v) / (hi - lo)) * (h - T - B);
       axes(g, w, h, L, R, T, B, lo, hi, short);

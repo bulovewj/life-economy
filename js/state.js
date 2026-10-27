@@ -6,7 +6,7 @@ LG.state = {
   newState(seed, fair = true, playerSeed = seed) {
     const D = LG.data.economy;
     const s = {
-      v: 1, seed, fair, name: '', avatar: 0,
+      v: 1, seed, fair, name: '', gender: 'm',
       age: D.startAge,
       stats: { happiness: D.start.happiness, health: D.start.health, relation: D.start.relation, skill: D.start.skill },
       cash: D.start.cash,
@@ -22,8 +22,9 @@ LG.state = {
       focus: 'study',
       priceLevel: 1, housingIdx: 1,
       path: '', schedule: {}, done: {}, yearly: [], delayed: [], risks: [], terms: {}, // 이벤트 엔진용
-      paused: null, rateShift: null, crashApplied: 0, joblessYears: 0, startedAge: 0, yearNotes: [], marks: {},
+      paused: null, rateShift: null, crashApplied: 0, retired: false, joblessYears: 0, startedAge: 0, yearNotes: [], marks: {},
       cards: {}, support: {}, flags: {}, history: [], timeline: [], log: [],
+      yearOut: 0, yearIn: 0, board: null, boardPrev: null, yearStart: null, lastDecisionAge: -9, // 현황판·자산판
       rngState: (Number(playerSeed) >>> 0) || 1, // 플레이어용 난수 스트림(역사는 seed+1 따로)
     };
     const r = LG.state.rngOf(s);

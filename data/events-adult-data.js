@@ -43,7 +43,7 @@ globalThis.LG = globalThis.LG || {};
       ],
       later: { second: { text: '둘째가 태어났어요.', effects: [{ t: 'child' }, stat('relation', 4), stat('happiness', 3)] } } },
 
-    { id: 'E21', when: (s, hist) => recession(s, hist, 33, 37) && invested(s), title: '첫 번째 경기 침체', icon: 'chart', before: [{ t: 'crash' }],
+    { id: 'E21', when: (s, hist) => recession(s, hist, 33, 37) && invested(s), title: '첫 번째 경기 침체', icon: 'chart', priority: true, before: [{ t: 'crash' }],
       text: '뉴스가 나와요. "경제가 크게 흔들려요. 주가가 30% 떨어졌어요."', choices: crashChoices(21), terms: ['위험과 수익'] },
 
     { id: 'E22', when: (s, hist) => {

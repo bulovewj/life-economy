@@ -8,7 +8,7 @@ LG.screens.title = function () {
     LG.screens.create();
   };
   render(el('section', { class: 'screen title' },
-    LG.ui.scene(30, 0, 'night'),
+    LG.ui.scene({ idx: 2, gender: 'm', outfit: 'casual', bg: 'night' }),
     el('h1', {}, '인생 살기 게임', el('br'), el('span', {}, '경제편')),
     el('p', { class: 'sub' }, '12살부터 80살까지, 내 선택으로 살아 봐요.'),
     el('button', { class: 'btn', type: 'button', onclick: start }, '새 인생 시작'),

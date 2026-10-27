@@ -1,0 +1,57 @@
+/* 한 해 화면 전용: 3단 배치(자산 · 진행 · 현황판), 진행 막대, 이벤트 발생 알림. 공통 토큰은 style.css의 :root */
+/* 한 해 화면: 휴대폰은 세로로(진행 → 현황판 → 자산), 태블릿 2단, PC 3단(자산 · 진행 · 현황판) */
+.year-grid { display: grid; gap: var(--gap); grid-template-columns: minmax(0, 1fr); grid-template-areas: "main" "board" "assets"; }
+.year-grid .main { grid-area: main; }
+.year-grid .board { grid-area: board; }
+.year-grid .assets { grid-area: assets; }
+@media (min-width: 720px) { .year-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "main main" "assets board"; } }
+@media (min-width: 1080px) {
+  .year-grid { grid-template-columns: 250px minmax(0, 1fr) 290px; grid-template-areas: "assets main board"; align-items: start; }
+  .year-grid .panel { position: sticky; top: var(--gap); }
+}
+.panel { background: #fffaf0; border: 2px solid var(--ink); border-radius: 8px; padding: 12px; }
+.panel h4 { margin: 8px 0 2px; font-size: 16px; color: var(--accent); }
+.kv { list-style: none; margin: 0; padding: 0; }
+.kv li { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 3px 0; border-bottom: 1px dashed var(--line); }
+.kv li.zero { opacity: 0.45; }
+.kv .k small { display: block; font-size: 14px; opacity: 0.75; }
+.kv .v { text-align: right; font-variant-numeric: tabular-nums; }
+.kv .chg { display: block; font-size: 14px; }
+.kv.total li { border-bottom: 0; font-weight: bold; padding-top: 6px; }
+.board.flash { animation: flash 1.2s ease-out; }
+@keyframes flash { 0% { background: #ffe9a8; } 100% { background: #fffaf0; } }
+
+/* 한 해 진행 막대(왼쪽 → 오른쪽) */
+.yearbar { position: relative; height: 32px; border: 2px solid var(--ink); border-radius: 8px; background: #fff; overflow: hidden; }
+.yearbar .fill { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--accent); transition-property: width; transition-timing-function: linear; }
+.yearbar.full .fill { width: 100%; background: #e0a030; }
+.yearbar span { position: relative; display: block; text-align: center; line-height: 28px; font-size: 16px; color: var(--ink); mix-blend-mode: normal; text-shadow: 0 0 3px #fff, 0 0 3px #fff; }
+
+/* 이벤트 발생 알림: 위쪽에 떠서 누르면 선택 화면으로 */
+.event-alert {
+  position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 30;
+  width: min(92vw, 460px); min-height: 64px; display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 10px 16px; font: inherit; color: #fff; background: #d1495b; border: 3px solid var(--ink); border-radius: 10px;
+  box-shadow: 0 4px 0 var(--ink); cursor: pointer; animation: drop 0.35s ease-out, pulse 1.6s ease-in-out 0.4s infinite;
+}
+.event-alert b { font-size: 20px; }
+.event-alert small { font-size: 16px; opacity: 0.9; }
+@keyframes drop { from { transform: translate(-50%, -12px); opacity: 0.4; } to { transform: translate(-50%, 0); opacity: 1; } } /* 멈춰도 화면 안에 보이게 */
+@keyframes pulse { 50% { transform: translate(-50%, 0) scale(1.03); } }
+.screen.year:has(.event-alert) .year-grid { padding-top: 128px; } /* 알림 높이만큼 비워 두기 */
+li.story b { color: #b13e53; }
+
+/* 이벤트 말풍선: 캐릭터 머리 위 */
+.scene .bubble { position: absolute; left: 50%; bottom: calc(3% + 132px); margin-left: 20px; padding: 4px; background: #fff; border: 2px solid var(--ink); border-radius: 10px; animation: pop 0.4s ease-out, bob 1.2s ease-in-out 0.4s infinite; }
+.scene .bubble::after { content: ''; position: absolute; left: 6px; bottom: -8px; border: 6px solid transparent; border-top-color: var(--ink); }
+@keyframes bob { 50% { transform: translateY(-4px); } }
+
+/* 판의 접는 칸: 합계 한 줄(48px) → 누르면 자세히 */
+.fold { border-bottom: 1px dashed var(--line); }
+.fold summary { display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: 48px; cursor: pointer; list-style: none; font-weight: bold; }
+.fold summary::-webkit-details-marker { display: none; }
+.fold summary .k::before { content: '▸ '; color: var(--accent); }
+.fold[open] summary .k::before { content: '▾ '; }
+.fold summary .v { text-align: right; font-variant-numeric: tabular-nums; }
+.fold summary .chg { display: block; font-size: 14px; font-weight: normal; }
+.fold .kv { padding: 0 0 8px 14px; }

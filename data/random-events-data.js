@@ -8,7 +8,7 @@ globalThis.LG = globalThis.LG || {};
   const rent = (s) => ['wolse', 'jeonse', 'share'].includes(s.housing.type);
 
   LG.data.luck = {
-    rate: 0.35, rateBusy: 0.15, // 갈림길이 있는 해는 낮게
+    rate: 0.25, rateBusy: 0.15, // 갈림길이 있는 해는 낮게
     debtMin: 500, debtGap: 4, // 빚 상담 카드: 빚이 이만큼(만원) 넘고 순자산의 3배보다 크면, 4년에 한 번까지
     debtCard: { id: 'RDEBT', title: '빚 상담 받기', icon: 'shield', terms: ['대출·금리'],
       text: '빚이 많이 쌓였어요. 상담센터에서 이자를 줄이는 방법을 알려 줘요.',

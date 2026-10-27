@@ -9,12 +9,12 @@ LG.screens.life = function (back, tabArg = 'log') {
   const kinds = { all: '전체', choice: '선택', life: '사건', money: '결산' };
   const pick = (x) => tab.filter === 'all' || x.kind === tab.filter || (tab.filter === 'choice' && ['luck', 'mark'].includes(x.kind)) || (tab.filter === 'life' && x.kind === 'note');
   const log = () => el('div', {},
-    el('div', { class: 'speed filters' }, Object.entries(kinds).map(([k, label]) =>
-      el('button', { class: 'box choice' + (tab.filter === k ? ' on' : ''), type: 'button', onclick: () => LG.screens.life(back, { name: 'log', filter: k }) }, label))),
+    el('div', { class: 'speed filters', role: 'group', 'aria-label': '기록 고르기' }, Object.entries(kinds).map(([k, label]) =>
+      el('button', { class: 'box choice' + (tab.filter === k ? ' on' : ''), type: 'button', 'aria-pressed': String(tab.filter === k), onclick: () => LG.screens.life(back, { name: 'log', filter: k }) }, label))),
     el('ul', { class: 'log' }, (s.log || []).length ? [...s.log].reverse().filter(pick).map((t) =>
       el('li', { class: t.kind },
         el('button', { class: 'star' + (t.star ? ' on' : ''), type: 'button', 'aria-label': '별표', 'aria-pressed': String(!!t.star),
-          onclick: (e) => { t.star = !t.star; e.target.classList.toggle('on', t.star); e.target.textContent = t.star ? '★' : '☆'; e.target.setAttribute('aria-pressed', String(t.star)); LG.save.write(s); } }, t.star ? '★' : '☆'),
+          onclick: (e) => { t.star = !t.star; e.target.classList.toggle('on', t.star); e.target.textContent = t.star ? '★' : '☆'; e.target.setAttribute('aria-pressed', String(t.star)); if (!LG.game.pending) LG.save.write(s); } }, t.star ? '★' : '☆'), // 해 중간(알림 대기)엔 저장 안 함: 결산 때 같이 저장
         el('span', {}, el('b', {}, `${t.age}살 `), t.text))) : el('li', {}, '아직 기록이 없어요.')));
 
   // 한 칸 = 1년. 지난 해는 색이 채워지고, 선택이 있던 해는 점이 찍혀요.
@@ -46,8 +46,8 @@ LG.screens.life = function (back, tabArg = 'log') {
   const body = { log, map, friends }[tab.name]();
   render(el('section', { class: 'screen' },
     el('h2', {}, '내 삶 보기'),
-    el('div', { class: 'row tabs' }, Object.entries(tabs).map(([k, label]) =>
-      el('button', { class: 'box choice' + (k === tab.name ? ' on' : ''), type: 'button', onclick: () => LG.screens.life(back, k) }, label))),
+    el('div', { class: 'row tabs', role: 'group', 'aria-label': '보기' }, Object.entries(tabs).map(([k, label]) =>
+      el('button', { class: 'box choice' + (k === tab.name ? ' on' : ''), type: 'button', 'aria-pressed': String(k === tab.name), onclick: () => LG.screens.life(back, k) }, label))),
     body,
     el('button', { class: 'btn', type: 'button', onclick: back || (() => LG.screens.year()) }, '돌아가기')));
 };

@@ -5,7 +5,7 @@ LG.screens.end = function () {
   const friends = LG.npc.all(s.seed, g.hist, s.fair);
   const titles = LG.data.pickTitles(s);
   const picked = el('p', { class: 'small picked' }, '그래프의 점을 누르면 그때 내가 한 선택이 보여요.');
-  const lifeCanvas = el('canvas', { role: 'img', 'aria-label': '인생 그래프' });
+  const lifeCanvas = el('canvas', { role: 'img', 'aria-label': `인생 그래프: 순자산 ${money(s.history[0].netWorth)}에서 ${money(s.history.at(-1).netWorth)}로, 행복 ${Math.round(s.history[0].happiness)}에서 ${Math.round(s.history.at(-1).happiness)}로. 아래 선택 목록에 자세히 있어요.` });
   const friendCanvas = el('canvas', { role: 'img', 'aria-label': '친구 비교 그래프' });
   const draw = () => {
     LG.graph.life(lifeCanvas, s, g.hist, (t) => { picked.textContent = t; });
@@ -32,7 +32,7 @@ LG.screens.end = function () {
   };
 
   render(el('section', { class: 'screen ending' },
-    LG.ui.scene(80, s.avatar, 'night'),
+    LG.ui.scene({ ...LG.ui.look(s), bg: 'night' }),
     el('h2', {}, `${s.name}의 인생 마무리`),
     el('p', { class: 'small' }, `세계 번호 ${s.seed} · ${s.age - 1}살까지 살았어요.`),
     el('div', { class: 'box' }, '순자산 ', el('b', {}, money(LG.economy.netWorth(s)))),

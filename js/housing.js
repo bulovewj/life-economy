@@ -3,6 +3,10 @@ globalThis.LG = globalThis.LG || {};
 
 (() => {
   const P = (s) => LG.data.economy.cards.place[s.cards.place];
+  // 이사하면 돌려받는 보증금 중 전세대출을 갚고 남는 돈
+  const backNet = (s) => s.assets.lease - s.loans.filter((l) => l.kind === 'jeonse').reduce((t, l) => t + l.bal, 0);
+  // 부모님 보증금 지원은 처음 독립할 때 한 번만(남은 지원액만 쓴다)
+  const useSupport = (s, need) => { const u = Math.min(s.support.deposit, need); s.support.deposit -= u; return need - u; };
   const liquid = (s) => s.cash + s.assets.deposit + s.assets.emergency + s.assets.index + s.assets.stock + s.assets.coin;
 
   // 이사 전 집 정리: 보증금을 돌려받고 전세대출을 갚는다
@@ -30,7 +34,7 @@ globalThis.LG = globalThis.LG || {};
     // 집을 사는 데 필요한 내 돈 (이미 가진 보증금은 뺀다)
     buyNeed(s, factor, loanRatio) {
       const price = Math.round(Math.round(P(s).house * s.housingIdx) * factor);
-      return Math.max(0, price - Math.round(price * loanRatio) - s.assets.lease);
+      return Math.max(0, price - Math.round(price * loanRatio) - backNet(s));
     },
 
     moveTo(s, type) {
@@ -39,12 +43,12 @@ globalThis.LG = globalThis.LG || {};
       const rent = (month) => Math.round(month * 12 * s.priceLevel);
       if (type === 'wolse') {
         const dep = Math.round(P(s).wolse[0] * s.priceLevel);
-        LG.economy.fund(s, Math.max(0, dep - s.support.deposit));
+        LG.economy.fund(s, useSupport(s, dep));
         s.assets.lease = dep;
         s.housing = { type, rent: rent(P(s).wolse[1]) };
       } else if (type === 'jeonse') {
         const price = Math.round(P(s).jeonse * s.housingIdx);
-        LG.economy.fund(s, Math.max(0, Math.round(price * 0.2) - s.support.deposit));
+        LG.economy.fund(s, useSupport(s, Math.round(price * 0.2)));
         LG.economy.addLoan(s, 'jeonse', Math.round(price * 0.8));
         s.assets.lease = price;
         s.housing = { type, rent: 0 };
@@ -56,8 +60,7 @@ globalThis.LG = globalThis.LG || {};
     buy(s, factor, loanRatio) {
       const value = Math.round(P(s).house * s.housingIdx);
       const price = Math.round(value * factor), loan = Math.round(price * loanRatio);
-      const back = s.assets.lease;
-      if (liquid(s) + back < price - loan) return { ok: false };
+      if (liquid(s) + backNet(s) < price - loan) return { ok: false }; // 모자라면 아무것도 바꾸지 않는다
       release(s);
       LG.economy.fund(s, price - loan);
       if (loan > 0) LG.economy.addLoan(s, 'mortgage', loan);

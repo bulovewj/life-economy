@@ -40,7 +40,14 @@ LG.data.economy = {
     '별명을 쓰도록 안내해 주세요. 기록은 이 기기 안에만 저장되고 밖으로 나가지 않아요.',
     '엔딩 화면의 인쇄 버튼을 누르면 A4 한 장짜리 "나의 인생 보고서"가 나와요.',
   ],
-  avatars: ['파랑이', '주황이', '초록이', '빨강이'],
+  genders: [{ key: 'm', label: '남자' }, { key: 'f', label: '여자' }],
+  // 가운데 그림: 신분에 따라 옷(outfit)과 배경(bg)이 바뀐다. 이벤트 아이콘에 맞춰 잠깐 다른 장소로.
+  looks: {
+    jobOutfit: { bigco: 'suit', smallco: 'suit', civil: 'suit', startupHit: 'suit', tech: 'work', techCert: 'work', minwage: 'work', tiny: 'work', startup: 'work', startupOk: 'work', freelance: 'casual' },
+    outfitBg: { suit: 'office', work: 'shop', casual: 'room' },
+    eventBg: { house: 'home', key: 'home', baby: 'home', briefcase: 'office', hospital: 'hospital', ring: 'wedding', car: 'campus', chart: 'office', shield: 'office' },
+    uniformFrom: 13, // 중학생부터 교복
+  },
   names: {
     max: 8, fallback: '이름 없는 여행자',
     badWords: ['바보', '멍청이', '씨발', '시발', '병신', '개새끼', '좆', 'ㅅㅂ', 'ㅂㅅ', '지랄'],
@@ -59,6 +66,8 @@ LG.data.economy = {
   spouseRetireAge: 60,
   shareMonth: 45,
   messages: { resume: '쉬던 시간이 끝나고 다시 일을 시작했어요.' },
+  // 배속 진행: 결정 화면에서 돌아온 뒤 최소 restMs 동안 한 해 화면(로그)을 보여 준다. stepMs ÷ 배속 = 한 해 간격
+  autoplay: { stepMs: 1600, restMs: 4000 },
   // 인생 로그 문구 (js/lifelog.js)
   logText: {
     recession: '경기가 크게 나빠졌어요. 주가가 떨어졌어요.',
@@ -67,9 +76,12 @@ LG.data.economy = {
     job: (label) => `새 일을 시작했어요: ${label}`,
     jobEnd: '일을 그만두었어요.',
     housing: { wolse: '원룸 월세로 이사했어요.', jeonse: '전세로 이사했어요.', share: '셰어하우스로 이사했어요.', own: '내 집으로 이사했어요!', parent: '부모님 집에서 살아요.' },
+    housingCost: (parts) => ` ${parts.join(', ')}이 들어요.`, // parts 예: ['보증금 1,000만원', '한 달 집세 70만원']
+    termGot: (name, desc) => `새 용어 카드: ${name} — ${desc}`,
     spouse: '결혼해서 함께 살게 되었어요.',
     child: '아이가 태어났어요.',
     borrowed: '돈이 모자라 빌렸어요. 이자가 붙어요.',
+    thrift: '모은 돈이 바닥나서 생활비를 줄였어요.',
     debtFree: '빚을 모두 갚았어요!',
     pension: '국민연금을 받기 시작했어요.',
     milestones: [1000, 10000, 50000, 100000, 500000],
@@ -77,6 +89,7 @@ LG.data.economy = {
     year: (inc, out, net) => `한 해 결산: +${inc} −${out} = ${net}`,
     grow: (group) => `${group}이 되었어요.`,
     mark: (q, a) => `마디 질문: ${q} → ${a || '(건너뜀)'}`,
+    names: { happiness: '행복', health: '건강', relation: '관계', skill: '실력', netWorth: '돈' },
   },
   spouseJobs: ['bigco', 'smallco', 'civil', 'tech', 'tiny'],
 
@@ -91,16 +104,20 @@ LG.data.economy = {
     minwage: { label: '최저임금 일자리', salary: 2680 },
     freelance: { label: '프리랜서', salary: 3500, random: [1000, 6000] }, // random: 매년 새로 정함
     startup: { label: '창업(준비)', salary: 750, random: [0, 1500] },
+    // 창업 유지·성공은 원안 3,000·8,000에서 M7에 낮춤: 대박 꼬리가 평균을 끌어올려 '위험할수록 이득'처럼 보여서
     startupOk: { label: '창업(유지)', salary: 2800 },
     startupHit: { label: '창업(대박)', salary: 6000 },
   },
   netRate: 0.85,
   raise: 0.03,
 
-  living: { single: 1500, couple: 3000, childYoung: 1320, childSchool: 1500 },
-  minorSpendRate: 0.7,
+  // couple 3,000: 원안 2,300이면 결혼이 돈으로 무조건 이득이 되어 M7에서 올림. senior: 65세부터 생활비 비율(노년 소비 감소)
+  living: { single: 1500, couple: 3000, childYoung: 1320, childSchool: 1500, senior: 0.8 },
+  minorSpendRate: 0.7, // 작업지시서는 '미성년 지출 없음'이지만, 용돈의 70%는 쓰고 30%만 남는 것으로 봄
   focusRate: { workIncome: 0.05, peopleSpend: 0.03 },
-  pension: { startAge: 65, perYear: 25, max: 1500 },
+  // 기초연금(basic): 65세부터 모두에게 연 400(단순화). thrift: 은퇴 뒤 모은 돈이 바닥나면 빌리기 전에 생활비를 최대 40% 줄이고 행복 -2
+  pension: { startAge: 65, perYear: 25, max: 1500, basic: 400 },
+  thrift: { rate: 0.4, happiness: -2 },
 
   // 빚 종류: left=원리금균등 남은 햇수(0이면 이자만), floating=금리 변동 반영
   loans: {

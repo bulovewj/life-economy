@@ -2,7 +2,7 @@
 // 시나리오 ID 전부 존재 · 선택지 tip 40자 이내 · 마지막 선택지 항상 가능 · 금지어 · 효과 종류·참조 검사
 const path = require('path');
 globalThis.LG = {};
-const files = ['economy-data', 'events-data', 'events-young-data', 'events-adult-data', 'events-senior-data', 'random-events-data', 'terms-data', 'endings-data']
+const files = ['economy-data', 'events-data', 'events-young-data', 'events-adult-data', 'events-senior-data', 'random-events-data', 'daily-events-data', 'story-events-data', 'terms-data', 'endings-data']
   .map((f) => `data/${f}`);
 [...files, 'js/rng', 'js/state', 'js/economy', 'js/housing', 'js/effects', 'js/events'].forEach((f) => require(path.join('..', f)));
 
@@ -11,6 +11,9 @@ const err = (where, msg) => errors.push(`${where}: ${msg}`);
 const BANNED = ['잘못된 선택', '실패한 인생', '나쁜 선택', '좋은 선택', '올바른 선택', '틀린 선택', '한심', '최악의'];
 const MAX = 40;
 const base = LG.state.newState(1, true);
+// 함수형 문구·비용을 볼 대표 상태들: 12살 / 직장인 30살 / 은퇴 60살
+const samples = [base, (() => { const s = LG.state.newState(2, true); s.age = 30; s.dependent = false; LG.economy.startJob(s, 'smallco'); s.cash = 3000; return s; })(),
+  (() => { const s = LG.state.newState(3, true); s.age = 60; s.dependent = false; LG.economy.startJob(s, 'bigco'); s.jobYears = 30; s.priceLevel = 4; return s; })()];
 const val = (v) => { try { return typeof v === 'function' ? v(base) : v; } catch (e) { return undefined; } };
 
 // 문장(. ? ! 기준) 하나가 40자 이내인지, 금지어가 없는지
@@ -77,7 +80,8 @@ if (LG.data.titles) {
 
 // 이벤트·운 카드 내용
 for (const ev of [...events, ...luck.cards, luck.debtCard]) {
-  text(`${ev.id} 본문`, typeof ev.text === 'string' ? ev.text : '');
+  if (typeof ev.text === 'function') samples.forEach((sm) => { try { text(`${ev.id} 본문(함수)`, ev.text(sm)); } catch (e) { err(ev.id, `본문 함수 오류: ${e.message}`); } });
+  else text(`${ev.id} 본문`, ev.text);
   (ev.terms || []).forEach((t) => LG.data.terms[t] || err(ev.id, `용어 카드 없음: ${t}`));
   if (!ev.choices || !ev.choices.length) { err(ev.id, '선택지 없음'); continue; }
   ev.choices.forEach((c, i) => choice(`${ev.id}-${i + 1}`, c, ids));
@@ -87,12 +91,15 @@ for (const ev of [...events, ...luck.cards, luck.debtCard]) {
   if (ev.fallback) { text(`${ev.id} fallback`, ev.fallback.text); if (!ev.fallback.tip) err(ev.id, 'fallback tip 없음'); }
   if (!ev.age && !ev.when && !luck.cards.includes(ev) && ev !== luck.debtCard) err(ev.id, 'age 또는 when이 필요해요');
 }
+LG.data.daily.list.forEach((d) => { text(`${d.id} 작은 일`, d.text); effects(d.id, d.effects, ids); if (!d.weight) err(d.id, 'weight 없음'); });
+if (LG.data.daily.list.length < 10) err('작은 일', '10개 이상이어야 해요');
+LG.data.stories.list.forEach((st) => { samples.forEach((sm) => text(`${st.id} 이야기`, typeof st.text === 'function' ? st.text(sm) : st.text)); effects(st.id, st.effects, ids); });
 Object.values(LG.data.terms).forEach((t) => text(`용어 ${t.name}`, t.desc));
 Object.values(LG.data.markers).forEach((q) => text('마디', q));
 LG.data.titles.forEach((t) => { text(`칭호 ${t.name}`, t.desc); text(`칭호 ${t.name}`, t.name); });
 Object.entries(LG.data.endingTexts).forEach(([k, v]) => text(`엔딩문구 ${k}`, v));
 LG.data.npcs.forEach((n) => text(`친구 ${n.name}`, n.desc));
 
-console.log(`이벤트 ${events.length}개, 운 카드 ${luck.cards.length}개, 마디 ${Object.keys(LG.data.markers).length}개, 용어 ${Object.keys(LG.data.terms).length}개, 칭호 ${titles}`);
+console.log(`이벤트 ${events.length}개, 운 카드 ${luck.cards.length}개, 작은 일 ${LG.data.daily.list.length}개, 마디 ${Object.keys(LG.data.markers).length}개, 용어 ${Object.keys(LG.data.terms).length}개, 칭호 ${titles}`);
 if (errors.length) { console.log(`\n문제 ${errors.length}건:`); errors.forEach((e) => console.log(' -', e)); process.exit(1); }
 console.log('OK: 모든 검사를 통과했어요.');

@@ -19,11 +19,14 @@ globalThis.LG = globalThis.LG || {};
   const H = {
     stat: (s, e, v) => { s.stats[e.k] = clamp(s.stats[e.k] + v, 0, 100); },
     cash(s, e, v) {
-      if (v >= 0) { s.cash += v; return; }
+      if (v >= 0) { s.cash += v; s.yearIn = (s.yearIn || 0) + v; return; }
+      s.yearOut = (s.yearOut || 0) - v; // 현황판: 올해 이벤트로 쓴 돈
       const left = LG.economy.take(s, -v);
       if (left > 0 && !s.dependent) LG.economy.addLoan(s, 'credit', left);
     },
     asset: (s, e, v) => { s.assets[e.k] = Math.max(0, s.assets[e.k] + v); },
+    // 통장 사이 옮기기: 현금에서 빼서 e.to에 넣는다(현금이 모자라면 있는 만큼만). 순자산은 그대로
+    transfer(s, e, v) { const amt = Math.max(0, Math.min(v, s.cash)); s.cash -= amt; s.assets[e.to] += amt; },
     mult: (s, e) => { s.assets[e.k] *= e.f; },
     debt: (s, e, v) => LG.economy.addLoan(s, e.k, v),
     flag: (s, e, v) => { s.flags[e.k] = e.v === undefined ? true : v; },
@@ -42,7 +45,7 @@ globalThis.LG = globalThis.LG || {};
       else s.recurring.push({ kind: e.what, amount: v, startAge, endAge });
     },
     delayed: (s, e) => putLater(s, s.age + e.years, e), // ev.later[key]를 나중에 실행
-    risk: (s, e) => s.risks.push({ ev: e.ev, key: e.key, endAge: s.age + e.years - 1 }), // 해마다 later[key].p 확률로 실행
+    risk: (s, e) => s.risks.push({ ev: e.ev, key: e.key, endAge: s.age + e.years }), // 다음 해부터 years번, 해마다 later[key].p 확률로 실행
     stake,
     move: (s, e) => LG.housing.moveTo(s, e.to),
     buyHouse(s, e, v, ctx, out) {
@@ -59,10 +62,12 @@ globalThis.LG = globalThis.LG || {};
     spouse(s) {
       const key = rng(s).pick(LG.data.economy.spouseJobs);
       s.spouse = { job: key, salary: Math.round(J(key).salary * s.priceLevel) };
+      s.flags['결혼나이'] = s.age;
     },
     child: (s) => { s.children.push(s.age); },
     retire(s, e) { // lump: 한꺼번에 / annuity: 15년 나눠서 / stake: 묶어 두기(지연 효과로 결과)
       const pay = LG.economy.retire(s);
+      s.retired = true; // 은퇴한 사람에게는 일자리 제안(X01)을 하지 않는다
       if (e.mode === 'annuity') s.recurring.push({ kind: 'income', amount: Math.round(pay / 15), startAge: s.age, endAge: s.age + 14 });
       else if (e.mode === 'stake') putLater(s, s.age + e.years, e, { amt: pay });
       else s.cash += pay;

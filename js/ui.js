@@ -53,14 +53,29 @@ LG.ui = {
     return idx;
   },
 
-  // 연령대 배경 위에 숨 쉬는 아바타 한 명 (배경 이름은 연령대 순서대로)
-  scene(age, avatar, bg) {
-    const S = LG.data.sprites, idx = LG.ui.ageIndex(age), room = ['room', 'room', 'campus', 'home', 'office', 'park'][idx];
-    const a = S.avatar.frames[`${avatar}_${idx}_0`], b = S.avatar.frames[`${avatar}_${idx}_1`], sc = 4;
-    const f = S.backgrounds.frames[bg || room];
-    return LG.ui.el('div', { class: 'scene', role: 'img', 'aria-label': `${LG.ui.ageGroup(age)} 시절의 나`,
-      style: `background-image:url(${S.backgrounds.src});background-size:${(S.backgrounds.w / f.w) * 100}% ${(S.backgrounds.h / f.h) * 100}%;background-position:${f.x ? (f.x / (S.backgrounds.w - f.w)) * 100 : 0}% ${f.y ? (f.y / (S.backgrounds.h - f.h)) * 100 : 0}%` },
-      LG.ui.el('span', { class: 'sprite breathe', style: `width:${32 * sc}px;height:${32 * sc}px;background-image:url(${S.avatar.src});background-size:${S.avatar.w * sc}px ${S.avatar.h * sc}px;background-position:-${a.x * sc}px -${a.y * sc}px;--x0:-${a.x * sc}px;--x1:-${b.x * sc}px;--y:-${a.y * sc}px` }));
+  // 지금 모습: 나이대·성별·옷·배경. 학생(교복·교실) → 대학생(캠퍼스) → 직장인(정장·사무실 / 작업복·가게) → 은퇴(카디건·공원)
+  look(s) {
+    const L = LG.data.economy.looks, age = s.age, gender = s.gender || 'm'; // 예전 저장은 save.check에서 성별을 되살린다
+    let outfit = 'casual', bg = 'room';
+    if (s.retired || age >= LG.data.economy.pension.startAge) { outfit = 'cardigan'; bg = 'park'; }
+    else if (s.job && !s.paused) { outfit = L.jobOutfit[s.job] || 'casual'; bg = L.outfitBg[outfit]; }
+    else if (s.dependent && age <= 18) { outfit = age >= L.uniformFrom ? 'uniform' : 'casual'; bg = 'school'; }
+    else if (s.dependent) bg = s.flags['대졸'] ? 'campus' : 'room';
+    else if (s.spouse || s.housing.type === 'own') bg = 'home';
+    return { idx: LG.ui.ageIndex(age), gender, outfit, bg };
+  },
+
+  // 배경 위에 숨 쉬는 아바타 한 명. icon을 주면 머리 위 말풍선 + 그 이벤트에 맞는 장소로 잠깐 바뀐다.
+  scene(look, icon) {
+    const S = LG.data.sprites, sc = 4, L = LG.data.economy.looks;
+    const bgName = (icon && L.eventBg[icon]) || look.bg;
+    const sheet = ['backgrounds', 'places'].map((k) => S[k]).find((x) => x.frames[bgName]) || S.backgrounds, f = sheet.frames[bgName] || sheet.frames.room;
+    const key = `${look.gender}_${look.idx}_${look.outfit}`, a = S.avatar.frames[`${key}_0`], b = S.avatar.frames[`${key}_1`];
+    const pos = (v, total, size) => (v ? (v / (total - size)) * 100 : 0);
+    return LG.ui.el('div', { class: 'scene', role: 'img', 'aria-label': icon ? '이벤트가 생긴 장면' : `${LG.ui.ageGroup(LG.data.economy.ageGroups[look.idx][0])} 시절의 나`,
+      style: `background-image:url(${sheet.src});background-size:${(sheet.w / f.w) * 100}% ${(sheet.h / f.h) * 100}%;background-position:${pos(f.x, sheet.w, f.w)}% ${pos(f.y, sheet.h, f.h)}%` },
+      LG.ui.el('span', { class: 'sprite breathe', style: `width:${32 * sc}px;height:${32 * sc}px;background-image:url(${S.avatar.src});background-size:${S.avatar.w * sc}px ${S.avatar.h * sc}px;background-position:-${a.x * sc}px -${a.y * sc}px;--x0:-${a.x * sc}px;--x1:-${b.x * sc}px;--y:-${a.y * sc}px` }),
+      icon ? LG.ui.el('span', { class: 'bubble' }, LG.ui.sprite('icons24', icon, 2)) : null);
   },
 
   // 능력치 막대. 전에 보여 준 값에서 새 값으로 부드럽게 차오른다.

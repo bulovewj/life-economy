@@ -98,28 +98,30 @@ LG.economy = {
     const sh = s.rateShift && s.age <= s.rateShift.until ? s.rateShift : { loan: 0, dep: 0 }; // 금리 인상 카드
 
     // 1·2. 소득과 지출
-    const pension = s.age >= D.pension.startAge ? Math.min(D.pension.max, s.workYears * D.pension.perYear) * pl * s.pensionMul : 0;
-    let income = s.dependent
-      ? s.allowance * 12 + s.partTime
-      : ((s.job ? s.salary : 0) + (s.spouse && s.age < D.spouseRetireAge ? s.spouse.salary : 0)) * D.netRate + s.partTime + pension;
-    income += active('income');
-    if (s.focus === 'work') income *= 1 + D.focusRate.workIncome;
+    const pension = s.age >= D.pension.startAge ? (Math.min(D.pension.max, s.workYears * D.pension.perYear) * s.pensionMul + D.pension.basic) * pl : 0;
+    const workMul = s.focus === 'work' ? 1 + D.focusRate.workIncome : 1;
+    const pay0 = s.dependent ? s.allowance * 12 : ((s.job ? s.salary : 0) + (s.spouse && s.age < D.spouseRetireAge ? s.spouse.salary : 0)) * D.netRate;
+    let income = pay0 + s.partTime + (s.dependent ? 0 : pension) + active('income');
+    income *= workMul;
     const kids = s.children.reduce((t, b) => {
       const a = s.age - b;
       return t + (a < 0 || a > 18 ? 0 : a <= 6 ? D.living.childYoung : D.living.childSchool);
     }, 0);
-    const living = (s.spouse ? D.living.couple : D.living.single) + kids;
-    let spend = s.dependent ? income * D.minorSpendRate : living * pl + s.housing.rent;
-    if (s.focus === 'people') spend *= 1 + D.focusRate.peopleSpend;
-    spend += active('expense');
+    const living = ((s.spouse ? D.living.couple : D.living.single) + kids) * (s.age >= D.pension.startAge ? D.living.senior : 1);
+    const peopleMul = s.focus === 'people' ? 1 + D.focusRate.peopleSpend : 1;
+    const rentPart = s.dependent ? 0 : s.housing.rent * peopleMul, fixed = active('expense');
+    let spend = (s.dependent ? income * D.minorSpendRate : living * pl + s.housing.rent) * peopleMul;
+    let livingPart = spend - rentPart;
+    spend += fixed;
 
     // 3. 이자와 원금 상환 (원리금균등)
     let interest = 0, principal = 0;
     const pay = s.loans.map((l) => {
       const rate = l.floating ? Math.max(0, l.rate + h.loanAdj + sh.loan) : l.rate;
       const i = l.bal * rate;
+      if (l.kind === 'student' && s.workYears === 0) { l.bal += i; return { l, p: 0 }; } // 학자금: 첫 취업 전 이자는 빚에 쌓인다(거치)
       let p = 0;
-      if (l.left > 0 && (l.kind !== 'student' || s.job)) {
+      if (l.left > 0 && (l.kind !== 'student' || s.workYears > 0)) { // 학자금은 한 번 일을 시작하면 그 뒤로 계속 갚는다
         const pmt = rate ? (l.bal * rate) / (1 - Math.pow(1 + rate, -l.left)) : l.bal / l.left;
         p = Math.min(l.bal, pmt - i);
       }
@@ -129,12 +131,18 @@ LG.economy = {
     pay.forEach(({ l, p }) => { l.bal -= p; if (l.left > 0 && p > 0) l.left -= 1; });
 
     // 4~6. 남은 돈 처리
-    let net = income - spend - interest - principal, borrowed = false, invest = 0;
+    let net = income - spend - interest - principal, borrowed = false, invest = 0, extra = 0, thrift = false;
+    const A0 = s.assets, have = Math.max(0, s.cash) + A0.emergency + A0.deposit + A0.index + A0.stock + A0.coin;
+    if (net < 0 && (s.retired || s.age >= D.pension.startAge) && have < -net) { // 은퇴 뒤 바닥: 빌리기 전에 아껴 산다
+      const cut = Math.min(-net - have, living * pl * D.thrift.rate);
+      spend -= cut; net += cut; livingPart -= cut; thrift = true;
+      s.stats.happiness = Math.max(0, s.stats.happiness + D.thrift.happiness);
+    }
     if (net < 0) borrowed = E.fund(s, -net);
     else {
       for (const k of D.repayFirst) {
         const l = s.loans.find((x) => x.kind === k);
-        if (l && net > 0) { const p = Math.min(l.bal, net); l.bal -= p; net -= p; }
+        if (l && net > 0) { const p = Math.min(l.bal, net); l.bal -= p; net -= p; extra += p; } // 비싼 빚 먼저 갚기
       }
       invest = s.dependent ? 0 : net * s.saveRate;
       for (const [k, w] of Object.entries(s.alloc)) s.assets[k] += (invest * w) / 100;
@@ -157,6 +165,9 @@ LG.economy = {
     s.loans.forEach((l) => { l.bal = Math.round(l.bal); });
     s.salary = Math.round(s.salary);
 
+    const evOut = s.yearOut || 0, evIn = s.yearIn || 0; // 올해 이벤트로 쓴/받은 돈(effects.cash가 쌓음)
+    s.yearOut = 0; s.yearIn = 0;
+
     // 9. 기록
     const st = s.stats;
     s.history.push({ age: s.age, netWorth: E.netWorth(s), happiness: st.happiness, health: st.health,
@@ -164,7 +175,10 @@ LG.economy = {
       saved: Math.round(invest), job: s.job, house: Math.round(s.assets.house), rate: s.dependent ? -1 : s.saveRate });
     s.age += 1;
     return { income: Math.round(income), spend: Math.round(spend), interest: Math.round(interest),
-      principal: Math.round(principal), net: Math.round(net), borrowed };
+      principal: Math.round(principal + extra), net: Math.round(net), borrowed, thrift, // 수입 − (지출+이자+상환) = 남은 돈
+      // 현황판용 세부: 월급(세후)·생활비·주거비·고정지출(보험·차·학원 등)·저축투자·올해 이벤트로 쓴/받은 돈
+      pay: Math.round(pay0 * workMul), living: Math.round(livingPart), rent: Math.round(rentPart), fixed: Math.round(fixed), invest: Math.round(invest),
+      eventOut: Math.round(evOut), eventIn: Math.round(evIn) };
   },
 };
 })();

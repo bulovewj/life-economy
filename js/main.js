@@ -20,12 +20,12 @@ LG.game = {
     const seed = /^\d{4}$/.test(q.get('seed') || '') ? Number(q.get('seed')) : null;
     return { seed, fair: q.get('fair') !== '0' };
   },
-  begin(name, avatar) {
+  begin(name, gender) {
     const cfg = this.config(), seed = cfg.seed || (Date.now() % 9000) + 1000; // 세계 번호(4자리)
     // 공정 모드: 모두 같은 시작. 아니면 시작 카드·운이 학생마다 다르다(경제 역사만 같음)
     const s = LG.state.newState(seed, cfg.fair, cfg.fair ? seed : seed * 7 + (Date.now() % 100000));
     s.name = name || LG.data.economy.names.fallback;
-    s.avatar = avatar;
+    s.gender = gender;
     LG.events.schedule(s);
     this.setup(s);
   },

@@ -43,10 +43,10 @@ globalThis.LG = globalThis.LG || {};
   const same = { coin: { E17: [0, 2], E20: [0, 2] } };
   LG.data.npcs = [
     { name: '차곡이', desc: '항상 안전한 선택, 저축 30%', focus: 'work', saveRate: 0.3, alloc: { deposit: 70, index: 30, stock: 0, coin: 0 }, ...same,
-      fixed: { E21: 1, E30: 1, E14: 2, E28: 1 },
+      fixed: { E05: 0, E07: 0, E21: 1, E30: 1, E14: 2, E28: 1 }, // 진학(공부 → 4년제)을 안전한 길로 본다
       weights: { cashOut: -0.02, debt: -0.01, happy: 0.1, other: 0.05, save: 0.05, invest: 0.01, risk: -3, exp: -1, jobPay: 0.3, safeJob: 2, riskJob: -2 } },
     { name: '꾸준이', desc: '저축 20%, 지수펀드 80%, 침체에도 그대로', focus: 'work', saveRate: 0.2, alloc: { deposit: 20, index: 80, stock: 0, coin: 0 }, ...same,
-      fixed: { E21: 1, E30: 1, E14: 2, E28: 1 },
+      fixed: { E05: 0, E07: 0, E21: 1, E30: 1, E14: 2, E28: 1 }, // 진학은 차곡이와 같게: 둘의 차이는 저축·투자 방식에서만
       weights: { cashOut: -0.01, debt: -0.005, happy: 0.1, other: 0.05, save: 0.03, invest: 0.08, risk: -0.5, exp: 0, jobPay: 0.5, safeJob: 0, riskJob: 0 } },
     { name: '한방이', desc: '코인·인기주 위주, 침체엔 다 판다', focus: 'work', saveRate: 0.2, alloc: { deposit: 0, index: 0, stock: 50, coin: 50 }, ...same,
       fixed: { E21: 0, E30: 0, E14: 0 },

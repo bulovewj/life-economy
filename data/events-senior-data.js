@@ -36,7 +36,7 @@ globalThis.LG = globalThis.LG || {};
         { label: '스스로 해 보게 응원한다', effects: [stat('relation', 1)], tip: '도움의 크기보다 마음이 전해지는 게 중요해요.' },
       ] },
 
-    { id: 'E30', when: (s, hist) => recession(s, hist, 56, 60) && invested(s), title: '두 번째 경기 침체', icon: 'chart', before: [{ t: 'crash' }], terms: ['위험과 수익'],
+    { id: 'E30', when: (s, hist) => recession(s, hist, 56, 60) && invested(s), title: '두 번째 경기 침체', icon: 'chart', priority: true, before: [{ t: 'crash' }], terms: ['위험과 수익'],
       text: '또 경기가 나빠졌어요. 지금 줄면 회복을 기다릴 시간이 짧아요.', choices: crashChoices(30) },
 
     { id: 'E31', when: (s) => !!s.job && !s.paused && s.age >= (s.job === 'civil' ? 62 : 60), title: '퇴직', icon: 'briefcase',

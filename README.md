@@ -15,14 +15,20 @@
 - 엔딩의 친구 4명은 AI가 아니라 정해진 규칙으로 움직여요. 엔딩 화면의 **인쇄**는 A4 한 장짜리 "나의 인생 보고서"예요.
 - 별명을 쓰도록 안내해 주세요.
 
+## 플레이 방법 메모
+- 배속(1×·2×·4×·8×)을 누르면 ❚❚를 누를 때까지 계속 진행해요. 갈림길·운 카드·마디에서는 답을 기다렸다가 같은 배속으로 이어 가요.
+- "다음 결정까지 »"는 다음 결정에서 멈춰요.
+- 한 해 화면의 **인생 로그**와 **내 삶 보기**(기록·인생 지도·친구들)에서 지금까지의 일을 볼 수 있어요.
+
 ## 개발 (빌드 도구 없음)
 - HTML + CSS + 바닐라 JS(클래식 `<script>`). 숫자는 모두 만원 단위 정수, 난수는 `LG.rng`(시드 기반)만 써요.
 - 콘텐츠는 `data/`에만: 수치 `economy-data.js`, 갈림길 `events-*-data.js`, 운 카드 `random-events-data.js`, 용어 `terms-data.js`, 엔딩·친구 `endings-data.js`.
-- 검증 스크립트(Node 필요):
+- 검증 스크립트(Node 22.2 이상, `zlib.crc32` 사용). 실패하면 종료 코드 1:
   - `node tools/check-data.js` 시나리오 ID·문구 길이·금지어·마지막 선택지 검사
-  - `node tools/sim.js 1000 events` 1,000번 자동 플레이(NaN·막힌 이벤트), `... npc` 친구 4명 분포
-  - `node tools/balance.js 200` 선택지별 결과 표(밸런스)
-  - `node tools/pxl-build.js` `assets/pxl/*.px.js` → `assets/img/*.png` + `sprites.js` 도트 빌드
+  - `node tools/regress.js` 코드 검토(docs/코드검토_개선사항.md) 재현 사례 회귀 검사
+  - `node tools/sim.js 1000 events` 1,000번 자동 플레이(NaN·막힌 이벤트·결정성), `... npc` 친구 4명 분포. `FAIR=0`이면 무작위 시작 카드
+  - `node tools/balance.js 200` 선택지별 결과 표(그 선택을 실제로 고를 수 있었던 시드만 비교)
+- 도트 이미지: claude-pxl 대신 외부 의존성 없는 자체 빌더를 써요. `node tools/pxl-build.js`가 `assets/pxl/*.px.js` → `assets/img/*.png` + `sprites.js`를 만들어요(sweetie16 팔레트).
 
 ## 출처
 - 숫자는 2026년 통계를 단순하게 만든 것이에요(docs/경제데이터.md). 실제와 달라요.

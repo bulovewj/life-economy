@@ -119,7 +119,7 @@ LG.data.events = [
           { t: 'sub', title: '등록금은 어떻게 낼까요?', text: '4년 동안 내야 해요. 부모님이 도와주는 몫은 빼고 계산했어요.',
             choices: [
               { label: '모아 둔 돈으로 낸다', effects: [tuition(1)], tip: '돈이 모자라면 빌려야 할 수도 있어요.' },
-              { label: '학자금 대출을 받는다', effects: [{ t: 'debt', k: 'student', v: (s) => own(s) * 4 }], tip: '학자금 대출은 취업한 뒤부터 갚아요.' },
+              { label: '학자금 대출을 받는다', effects: [{ t: 'debt', k: 'student', v: (s) => own(s) * 4 }], tip: '취업 전 이자는 빚에 쌓이고, 취업 뒤 갚아요.' },
               { label: '장학금에 도전한다',
                 chance: [
                   { p: (s) => (s.stats.skill >= 60 ? 0.7 : 0), text: '장학금을 받았어요! 등록금이 반으로 줄어요.', effects: [tuition(0.5)] },

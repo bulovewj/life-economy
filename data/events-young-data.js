@@ -57,9 +57,9 @@ globalThis.LG = globalThis.LG || {};
     { id: 'E11', when: (s) => !!s.job && s.job !== 'startup', title: '첫 월급', icon: 'coin', terms: ['세전·세후', '비상금'],
       text: (s) => `세전 월급은 ${money(s.salary / 12)}이에요. 보험료와 세금을 빼면 실수령액은 ${money((s.salary / 12) * LG.data.economy.netRate)}이에요.`,
       choices: [
-        { label: '부모님께 선물하고 나머지는 저축한다', effects: [stat('relation', 6), { t: 'asset', k: 'deposit', v: (s) => Math.round((s.salary / 12) * 0.85 * 0.5) }], tip: '고마운 마음을 전하는 것도 좋은 쓰임이에요.' },
+        { label: '부모님께 선물하고 나머지는 저축한다', effects: [stat('relation', 6), { t: 'transfer', to: 'deposit', v: (s) => Math.round((s.salary / 12) * 0.85 * 0.5) }], tip: '고마운 마음을 전하는 것도 좋은 쓰임이에요.' },
         { label: '명품 하나를 플렉스한다', effects: [cash(-300), stat('happiness', 5), count('경험소비'), later('E11', 'flex', 1)], tip: '기분은 금방 익숙해져요.' },
-        { label: '비상금 통장부터 만든다', effects: [flag('비상금'), asset('emergency', pl(375))], tip: '갑작스러운 일에 대비하는 돈이에요.' },
+        { label: '비상금 통장부터 만든다', effects: [flag('비상금'), { t: 'transfer', to: 'emergency', v: pl(375) }], tip: '갑작스러운 일에 대비하는 돈이에요.' },
         { label: '바로 투자를 시작해 본다', effects: [{ t: 'setting', k: 'saveRate', v: 0.2 }, { t: 'ui', v: 'wallet' }], tip: '투자는 나눠서 천천히 시작해요.' },
       ],
       later: { flex: { text: '플렉스한 기분이 조금 익숙해졌어요.', effects: [stat('happiness', -3)] } } },
@@ -146,10 +146,11 @@ globalThis.LG = globalThis.LG || {};
       choices: [
         { label: '실손보험 하나만 든다 (연 40만원)', effects: [expense(pl(40), 52), flag('보험')], tip: '병원비 걱정을 줄여 주는 보험이에요.' },
         { label: '들지 않는다', effects: [], tip: '사고가 나면 병원비를 전부 내야 해요.' },
+        // 원안 연 600은 평생 3억 넘게 나가 다른 모든 선택을 압도해서 M7에서 300으로 낮춤
         { label: '권유받은 보험을 다 든다 (연 300만원)', effects: [expense(pl(300), 52), flag('보험')], tip: '보험도 너무 많으면 짐이에요.' },
       ] },
 
-    { id: 'X01', when: (s) => idle(s) && s.joblessYears >= 2 && !s.flags['취업준비'], title: '일자리 제안', icon: 'briefcase',
+    { id: 'X01', when: (s) => idle(s) && !s.retired && s.age < 60 && s.joblessYears >= 2 && !s.flags['취업준비'], title: '일자리 제안', icon: 'briefcase',
       text: '일을 쉰 지 두 해가 지났어요. 일자리 두 곳을 소개받았어요.',
       choices: [
         { label: '최저임금 일자리를 구한다', effects: [job('minwage')], tip: '일하며 다시 시작하는 것도 좋은 길이에요.' },
