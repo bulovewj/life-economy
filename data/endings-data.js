@@ -18,20 +18,22 @@ globalThis.LG = globalThis.LG || {};
   };
 
   // 칭호: 위에서부터 조건이 맞는 것 최대 3개
+  // 칭호 기준. '올해의 집중'을 없앤 뒤 선택만으로 노리면 닿는 수준으로 맞춤(tools/sim.js·노리는 플레이 실측)
+  const T = { saveRate: 30, happy: 65, exp: 5, relation: 72, health: 78, balance: 60, balanceSkill: 50 };
   LG.data.titles = [
     { name: '차곡차곡 저축왕', desc: '평생 꾸준히 많이 모았어요.',
-      test: (s) => { const a = adult(s); return a.length > 0 && a.reduce((t, h) => t + h.rate, 0) / a.length >= 0.3; } },
+      test: (s) => { const a = adult(s); return a.length > 0 && Math.round((a.reduce((t, h) => t + h.rate, 0) / a.length) * 100) >= T.saveRate; } }, // 화면처럼 % 단위로 반올림
     { name: '흔들려도 버틴 투자자', desc: '경기가 나빠져도 흔들리지 않았어요.', test: (s) => !!f(s, '침체버팀21') && !!f(s, '침체버팀30') },
-    { name: '경험 부자', desc: '다양한 경험으로 마음이 풍요로워요.', test: (s) => s.stats.happiness >= 80 && f(s, '경험소비') >= 5 },
-    { name: '가족이 보물', desc: '곁의 사람들과 깊게 이어졌어요.', test: (s) => s.stats.relation >= 85 },
+    { name: '경험 부자', desc: '다양한 경험으로 마음이 풍요로워요.', test: (s) => s.stats.happiness >= T.happy && f(s, '경험소비') >= T.exp },
+    { name: '가족이 보물', desc: '곁의 사람들과 깊게 이어졌어요.', test: (s) => s.stats.relation >= T.relation },
     { name: '꿈을 따라간 사람', desc: '좋아하는 일을 오래 이어 갔어요.', test: (s) => s.path === '꿈' && yearsOf(s, ['freelance', 'startup', 'startupOk', 'startupHit']) >= 10 },
     { name: '다시 일어선 사람', desc: '어려운 때를 지나 다시 일어났어요.',
       test: (s) => s.history.some((h) => h.netWorth < 0) && s.history.at(-1).netWorth >= 0 },
     { name: '나눔 천사', desc: '가진 것을 나누는 기쁨을 알았어요.', test: (s) => !!f(s, '나눔') || f(s, '기부') >= 2 },
-    { name: '건강 지킴이', desc: '몸을 잘 돌보며 살았어요.', test: (s) => s.stats.health >= 80 },
+    { name: '건강 지킴이', desc: '몸을 잘 돌보며 살았어요.', test: (s) => s.stats.health >= T.health },
     { name: '사기 방어 마스터', desc: '수상한 제안을 잘 알아봤어요.', test: (s) => !!f(s, '사기방어09') && !!f(s, '사기방어14') && !!f(s, '사기방어28') },
     { name: '균형의 달인', desc: '여러 영역을 고르게 챙겼어요.',
-      test: (s) => Object.values(s.stats).every((v) => v >= 60) && s.history.at(-1).netWorth >= 0 },
+      test: (s) => ['happiness', 'health', 'relation'].every((k) => s.stats[k] >= T.balance) && s.stats.skill >= T.balanceSkill && s.history.at(-1).netWorth >= 0 },
   ];
 
   // 5영역(0~100): 돈은 오늘 물가로 바꾼 순자산 5억원을 100으로
@@ -46,16 +48,16 @@ globalThis.LG = globalThis.LG || {};
   // 친구 4명. weights는 선택지의 성격(js/npc.js features)에 주는 점수, fixed는 고정 선택, coin은 둘 중 무작위(50%)
   const same = { coin: { E17: [0, 2], E20: [0, 2] } };
   LG.data.npcs = [
-    { name: '차곡이', desc: '항상 안전한 선택, 저축 30%', focus: 'work', saveRate: 0.3, alloc: { deposit: 70, index: 30, stock: 0, coin: 0 }, ...same,
+    { name: '차곡이', desc: '항상 안전한 선택, 저축 30%', saveRate: 0.3, alloc: { deposit: 70, index: 30, stock: 0, coin: 0 }, ...same,
       fixed: { E05: 0, E07: 0, E21: 1, E30: 1, E14: 2, E28: 1 }, // 진학(공부 → 4년제)을 안전한 길로 본다
       weights: { cashOut: -0.02, debt: -0.01, happy: 0.1, other: 0.05, save: 0.05, invest: 0.01, risk: -3, exp: -1, jobPay: 0.3, safeJob: 2, riskJob: -2 } },
-    { name: '꾸준이', desc: '저축 20%, 지수펀드 80%, 침체에도 그대로', focus: 'work', saveRate: 0.2, alloc: { deposit: 20, index: 80, stock: 0, coin: 0 }, ...same,
+    { name: '꾸준이', desc: '저축 20%, 지수펀드 80%, 침체에도 그대로', saveRate: 0.2, alloc: { deposit: 20, index: 80, stock: 0, coin: 0 }, ...same,
       fixed: { E05: 0, E07: 0, E21: 1, E30: 1, E14: 2, E28: 1 }, // 진학은 차곡이와 같게: 둘의 차이는 저축·투자 방식에서만
       weights: { cashOut: -0.01, debt: -0.005, happy: 0.1, other: 0.05, save: 0.03, invest: 0.08, risk: -0.5, exp: 0, jobPay: 0.5, safeJob: 0, riskJob: 0 } },
-    { name: '한방이', desc: '코인·인기주 위주, 침체엔 다 판다', focus: 'work', saveRate: 0.2, alloc: { deposit: 0, index: 0, stock: 50, coin: 50 }, ...same,
+    { name: '한방이', desc: '코인·인기주 위주, 침체엔 다 판다', saveRate: 0.2, alloc: { deposit: 0, index: 0, stock: 50, coin: 50 }, ...same,
       fixed: { E21: 0, E30: 0, E14: 0 },
       weights: { cashOut: -0.005, debt: 0.002, happy: 0.05, other: 0, save: 0, invest: 0.1, risk: 2, exp: 0, jobPay: 0.5, safeJob: 0, riskJob: 0 } },
-    { name: '오늘이', desc: '경험과 소비 중심, 저축은 조금', focus: 'rest', saveRate: 0.1, alloc: { deposit: 50, index: 0, stock: 0, coin: 0, emergency: 50 }, ...same, // 저축 10% 중 절반은 비상금
+    { name: '오늘이', desc: '경험과 소비 중심, 저축은 조금', saveRate: 0.1, alloc: { deposit: 50, index: 0, stock: 0, coin: 0, emergency: 50 }, ...same, // 저축 10% 중 절반은 비상금
       fixed: { E14: 2 },
       weights: { cashOut: -0.002, debt: 0.003, happy: 0.8, other: 0.1, save: -0.02, invest: 0, risk: -0.5, exp: 3, jobPay: 0.1, safeJob: 0, riskJob: 0 } },
   ];

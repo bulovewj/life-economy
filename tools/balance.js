@@ -31,7 +31,6 @@ function life(seed, force) {
       }
       return ok[rnd(blk.id || blk.title || 'sub').int(0, ok.length - 1)];
     },
-    focus: () => rnd('focus').pick(Object.keys(LG.data.economy.focus)),
     onWallet() { const r = rnd('wallet'); s.saveRate = r.pick([0, 0.1, 0.2, 0.3, 0.5]); const a = r.int(0, 100); s.alloc = { deposit: 100 - a, index: a, stock: 0, coin: 0 }; },
     seen: (id) => { fired[id] = { n: 1 }; },
   });

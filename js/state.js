@@ -19,7 +19,6 @@ LG.state = {
       housing: { type: 'parent', rent: 0 },
       recurring: [], // {kind:'income'|'expense', amount, endAge}
       saveRate: 0, alloc: { deposit: 100, index: 0, stock: 0, coin: 0 },
-      focus: 'study',
       priceLevel: 1, housingIdx: 1,
       path: '', schedule: {}, done: {}, yearly: [], delayed: [], risks: [], terms: {}, // 이벤트 엔진용
       paused: null, rateShift: null, crashApplied: 0, retired: false, joblessYears: 0, startedAge: 0, yearNotes: [], marks: {},

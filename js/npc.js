@@ -56,7 +56,7 @@ globalThis.LG = globalThis.LG || {};
   const score = (s, c, w) => Object.entries(features(s, c)).reduce((t, [k, v]) => t + (w[k] || 0) * v, 0);
 
   LG.npc = {
-    // 한 인생을 끝까지 돌린다. h = {choose(blk,s)→선택지|null, focus(s)→키, onWallet(s), stuck(id,s), year(s,요약)}
+    // 한 인생을 끝까지 돌린다. h = {choose(blk,s)→선택지|null, onWallet(s), stuck(id,s), year(s,요약)}
     run(s, hist, h) {
       const resolve = (blk, id) => {
         for (;;) {
@@ -71,7 +71,6 @@ globalThis.LG = globalThis.LG || {};
       };
       while (s.age <= LG.data.economy.endAge) {
         LG.events.startYear(s);
-        LG.events.applyFocus(s, h.focus(s));
         const ev = LG.events.due(s, hist);
         if (ev) { if (h.seen) h.seen(ev.id); s.lastDecisionAge = s.age; resolve(ev, ev.id); }
         const card = LG.events.luck(s, !!ev);
@@ -103,7 +102,6 @@ globalThis.LG = globalThis.LG || {};
       };
       return LG.npc.run(s, hist, {
         choose: (blk) => pickBest(blk),
-        focus: () => npc.focus,
         year: (st) => { if (!st.dependent && st.age >= 25) { st.saveRate = npc.saveRate; st.alloc = { ...npc.alloc }; } },
       });
     },

@@ -109,12 +109,6 @@ globalThis.LG = globalThis.LG || {};
       return notes;
     },
 
-    // 올해의 집중 → 능력치
-    applyFocus(s, key) {
-      s.focus = key;
-      for (const [k, v] of Object.entries(LG.data.economy.focus[key].stats)) LG.effects.apply(s, { t: 'stat', k, v });
-    },
-
     // 몇 년간 매년 오르내리는 능력치(recurring stat)
     yearlyStats(s) {
       s.yearly = s.yearly.filter((y) => y.endAge >= s.age);

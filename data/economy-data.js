@@ -53,13 +53,6 @@ LG.data.economy = {
     badWords: ['바보', '멍청이', '씨발', '시발', '병신', '개새끼', '좆', 'ㅅㅂ', 'ㅂㅅ', '지랄'],
   },
   ageGroups: [[12, '어린이'], [13, '청소년'], [20, '청년'], [30, '어른'], [50, '중년'], [65, '노년']],
-  // 올해의 집중: 능력치 변화. 소득+5%·지출+3%는 economy.settleYear에서 처리.
-  focus: {
-    study: { label: '공부', stats: { skill: 3, happiness: -1 } },
-    work: { label: '일과 돈', stats: { health: -1 } },
-    rest: { label: '건강과 여가', stats: { health: 2, happiness: 2 } },
-    people: { label: '사람', stats: { relation: 3 } },
-  },
   // 능력치는 해마다 휴식값으로 조금씩 돌아간다(그대로 두면 100에 붙어 선택의 차이가 안 보임). 건강은 나이 들수록 휴식값이 내려간다.
   drift: { rate: 0.06, rest: { happiness: 60, relation: 50, skill: 50 }, health: { base: 80, from: 40, perYear: 0.4 } },
   tuition: 730, college2: 600,
@@ -116,7 +109,6 @@ LG.data.economy = {
   // couple 3,000: 원안 2,300이면 결혼이 돈으로 무조건 이득이 되어 M7에서 올림. senior: 65세부터 생활비 비율(노년 소비 감소)
   living: { single: 1500, couple: 3000, childYoung: 1320, childSchool: 1500, senior: 0.8 },
   minorSpendRate: 0.7, // 작업지시서는 '미성년 지출 없음'이지만, 용돈의 70%는 쓰고 30%만 남는 것으로 봄
-  focusRate: { workIncome: 0.05, peopleSpend: 0.03 },
   // 기초연금(basic): 65세부터 모두에게 연 400(단순화). thrift: 은퇴 뒤 모은 돈이 바닥나면 빌리기 전에 생활비를 최대 40% 줄이고 행복 -2
   pension: { startAge: 65, perYear: 25, max: 1500, basic: 400 },
   thrift: { rate: 0.4, happiness: -2 },

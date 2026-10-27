@@ -9,16 +9,8 @@ LG.screens.year = function () {
   const notes = LG.events.startYear(s); // 지난 일의 결과(지연 효과)
   if (fresh) notes.forEach((n) => LG.lifelog.add(s, 'note', n));
   const pending = g.pending;
-  let focus = s.focus;
-
-  const focusBtns = Object.entries(D.focus).map(([k, f]) =>
-    el('button', { class: 'box choice' + (k === focus ? ' on' : ''), type: 'button', 'aria-pressed': String(k === focus), onclick: () => {
-      focus = k;
-      focusBtns.forEach((b, j) => { const on = Object.keys(D.focus)[j] === k; b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); });
-    } }, f.label));
-
   // 배속: 누르면 ❚❚를 누를 때까지 계속. 이벤트 알림에서는 기다렸다가 같은 배속으로 이어 간다.
-  const go = (speed, mode) => { g.speed = speed; g.mode = mode; g.auto = true; if (g.pending) LG.screens.year(); else LG.screens.advance(focus); };
+  const go = (speed, mode) => { g.speed = speed; g.mode = mode; g.auto = true; if (g.pending) LG.screens.year(); else LG.screens.advance(); };
   const on = (n) => g.auto && g.mode === 'speed' && g.speed === n;
   const speedBar = el('div', { class: 'speed', role: 'group', 'aria-label': '시간 속도' },
     el('button', { class: 'box choice' + (g.auto ? '' : ' on'), type: 'button', 'aria-label': '멈춤', onclick: () => { g.auto = false; LG.screens.year(); } }, '❚❚'),
@@ -52,12 +44,9 @@ LG.screens.year = function () {
       el('h3', {}, '인생 로그'),
       el('ul', {}, recent.length ? recent.map((x) => el('li', { class: x.kind }, el('b', {}, `${x.age}살 `), x.text)) : el('li', {}, '이제 인생이 시작돼요.')),
       el('button', { class: 'link', type: 'button', onclick: () => LG.screens.life() }, '전체 기록 보기')),
-    el('h3', {}, '올해의 집중'),
-    el('div', { class: 'row', role: 'group', 'aria-label': '올해의 집중' }, focusBtns),
-    el('div', { class: 'row' },
-      pending ? el('button', { class: 'btn', type: 'button', onclick: open }, '이벤트 보러 가기')
-        : el('button', { class: 'btn', type: 'button', onclick: () => { g.auto = false; LG.screens.advance(focus); } }, LG.ui.sprite('icons16', 'next', 2), '다음 해'),
-      pending ? null : el('button', { class: 'btn ghost', type: 'button', onclick: () => go(g.speed, 'next') }, LG.ui.sprite('icons16', 'auto', 2), '다음 결정까지 »')),
+    pending ? null : el('div', { class: 'row' }, // 이벤트가 오면 위쪽 알림을 눌러 들어간다
+      el('button', { class: 'btn', type: 'button', onclick: () => { g.auto = false; LG.screens.advance(); } }, LG.ui.sprite('icons16', 'next', 2), '다음 해'),
+      el('button', { class: 'btn ghost', type: 'button', onclick: () => go(g.speed, 'next') }, LG.ui.sprite('icons16', 'auto', 2), '다음 결정까지 »')),
     el('div', { class: 'row' },
       el('button', { class: 'btn ghost', type: 'button', onclick: () => LG.screens.life() }, '내 삶 보기'),
       el('button', { class: 'btn ghost', type: 'button', onclick: () => LG.screens.wallet() }, LG.ui.sprite('icons16', 'wallet', 2), '내 지갑'),
@@ -73,16 +62,15 @@ LG.screens.year = function () {
   if (g.auto) {
     fill.style.transitionDuration = `${wait}ms`;
     requestAnimationFrame(() => requestAnimationFrame(() => { fill.style.width = '100%'; }));
-    g.timer = setTimeout(() => { if (document.querySelector('.year')) LG.screens.advance(focus); }, wait); // 다른 화면에 가 있으면 건너뜀
+    g.timer = setTimeout(() => { if (document.querySelector('.year')) LG.screens.advance(); }, wait); // 다른 화면에 가 있으면 건너뜀
   }
 };
 
-// 집중 → 갈림길(알림) → 운 카드(알림 또는 바로 적용) → 인생 이야기·작은 일 → 결산 → 다음 나이
-LG.screens.advance = function (focus) {
+// 갈림길(알림) → 운 카드(알림 또는 바로 적용) → 인생 이야기·작은 일 → 결산 → 다음 나이
+LG.screens.advance = function () {
   const s = LG.game.s, g = LG.game, age = s.age, before = LG.lifelog.snap(s);
   clearTimeout(g.timer);
   s.yearStart = LG.panels.snap(s); // 자산판 ▲▼ 기준
-  LG.events.applyFocus(s, focus);
   const ev = LG.events.due(s, g.hist);
   const settle = () => {
     LG.events.yearlyStats(s); // 올해 고른 몇 년 효과도 올해부터 적용(NPC 러너와 같은 순서)

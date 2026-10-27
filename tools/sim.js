@@ -31,7 +31,6 @@ function playEvents(seed, stats) {
   const mine = new Set(); // 이 인생에서 본 이벤트(시드 비율용)
   const out = LG.npc.run(s, hist, {
     choose(blk) { const ok = blk.choices.filter((c) => LG.events.available(s, c).ok); return ok.length ? ok[r.int(0, ok.length - 1)] : null; },
-    focus: () => r.pick(Object.keys(LG.data.economy.focus)),
     onWallet() { s.saveRate = r.pick([0, 0.1, 0.2, 0.3, 0.5]); const a = r.int(0, 100); s.alloc = { deposit: 100 - a, index: a, stock: 0, coin: 0 }; },
     stuck: (id) => stats.stuck.push(`${id}@${s.age}`),
     seen: (id) => { stats.seen[id] = (stats.seen[id] || 0) + 1; mine.add(id); },

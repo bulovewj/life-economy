@@ -99,18 +99,15 @@ LG.economy = {
 
     // 1·2. 소득과 지출
     const pension = s.age >= D.pension.startAge ? (Math.min(D.pension.max, s.workYears * D.pension.perYear) * s.pensionMul + D.pension.basic) * pl : 0;
-    const workMul = s.focus === 'work' ? 1 + D.focusRate.workIncome : 1;
     const pay0 = s.dependent ? s.allowance * 12 : ((s.job ? s.salary : 0) + (s.spouse && s.age < D.spouseRetireAge ? s.spouse.salary : 0)) * D.netRate;
-    let income = pay0 + s.partTime + (s.dependent ? 0 : pension) + active('income');
-    income *= workMul;
+    const income = pay0 + s.partTime + (s.dependent ? 0 : pension) + active('income');
     const kids = s.children.reduce((t, b) => {
       const a = s.age - b;
       return t + (a < 0 || a > 18 ? 0 : a <= 6 ? D.living.childYoung : D.living.childSchool);
     }, 0);
     const living = ((s.spouse ? D.living.couple : D.living.single) + kids) * (s.age >= D.pension.startAge ? D.living.senior : 1);
-    const peopleMul = s.focus === 'people' ? 1 + D.focusRate.peopleSpend : 1;
-    const rentPart = s.dependent ? 0 : s.housing.rent * peopleMul, fixed = active('expense');
-    let spend = (s.dependent ? income * D.minorSpendRate : living * pl + s.housing.rent) * peopleMul;
+    const rentPart = s.dependent ? 0 : s.housing.rent, fixed = active('expense');
+    let spend = s.dependent ? income * D.minorSpendRate : living * pl + s.housing.rent;
     let livingPart = spend - rentPart;
     spend += fixed;
 
@@ -177,7 +174,7 @@ LG.economy = {
     return { income: Math.round(income), spend: Math.round(spend), interest: Math.round(interest),
       principal: Math.round(principal + extra), net: Math.round(net), borrowed, thrift, // 수입 − (지출+이자+상환) = 남은 돈
       // 현황판용 세부: 월급(세후)·생활비·주거비·고정지출(보험·차·학원 등)·저축투자·올해 이벤트로 쓴/받은 돈
-      pay: Math.round(pay0 * workMul), living: Math.round(livingPart), rent: Math.round(rentPart), fixed: Math.round(fixed), invest: Math.round(invest),
+      pay: Math.round(pay0), living: Math.round(livingPart), rent: Math.round(rentPart), fixed: Math.round(fixed), invest: Math.round(invest),
       eventOut: Math.round(evOut), eventIn: Math.round(evIn) };
   },
 };
